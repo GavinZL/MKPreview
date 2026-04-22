@@ -1,0 +1,355 @@
+/* ============================================================
+   MKPreview - 代码块渲染样式
+   文件: src/assets/styles/markdown/code.css
+   范围: .mk-body 下的代码块元素
+   规范: PRD 第八节 8.5
+   ============================================================ */
+
+/* -------------------- 代码块容器 -------------------- */
+
+.mk-body .code-block-wrapper {
+  margin: 1.2em 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-code);
+  overflow: hidden;
+}
+
+/* -------------------- 代码块头部 -------------------- */
+
+.mk-body .code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.mk-body .code-lang {
+  text-transform: lowercase;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* -------------------- 复制按钮 -------------------- */
+
+.mk-body .code-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.mk-body .code-copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mk-body .code-copy-btn:active {
+  transform: scale(0.96);
+}
+
+.mk-body .code-copy-btn.copied {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.mk-body .code-copy-btn .copy-label {
+  min-width: 28px;
+  text-align: center;
+}
+
+/* 悬浮时才显示复制按钮（可选：默认显示） */
+.mk-body .code-block-wrapper:not(:hover) .code-copy-btn {
+  opacity: 0.6;
+}
+
+.mk-body .code-block-wrapper:hover .code-copy-btn {
+  opacity: 1;
+}
+
+/* -------------------- 代码主体 -------------------- */
+
+.mk-body .code-body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  overflow-x: auto;
+}
+
+.mk-body .code-body code {
+  display: block;
+  padding: 14px 18px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+  tab-size: 4;
+}
+
+/* -------------------- 行号显示 -------------------- */
+
+.mk-body .code-block-wrapper.with-line-numbers {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.mk-body .code-block-wrapper.with-line-numbers .code-header {
+  grid-column: 1 / -1;
+}
+
+.mk-body .line-numbers {
+  padding: 14px 0;
+  background: color-mix(in srgb, var(--bg-tertiary) 30%, transparent);
+  border-right: 1px solid var(--border);
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+}
+
+.mk-body .line-number {
+  display: block;
+  padding: 0 12px 0 18px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  min-width: 3ch;
+}
+
+.mk-body .code-body.with-line-numbers {
+  overflow-x: auto;
+}
+
+/* -------------------- highlight.js 主题适配 -------------------- */
+
+/* 亮色主题: github */
+html[data-theme="light"] .mk-body .code-body code .hljs-comment,
+html[data-theme="light"] .mk-body .code-body code .hljs-quote {
+  color: #6a737d;
+  font-style: italic;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-keyword,
+html[data-theme="light"] .mk-body .code-body code .hljs-selector-tag,
+html[data-theme="light"] .mk-body .code-body code .hljs-subst {
+  color: #d73a49;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-number,
+html[data-theme="light"] .mk-body .code-body code .hljs-literal,
+html[data-theme="light"] .mk-body .code-body code .hljs-variable,
+html[data-theme="light"] .mk-body .code-body code .hljs-template-variable,
+html[data-theme="light"] .mk-body .code-body code .hljs-tag .hljs-attr {
+  color: #005cc5;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-string,
+html[data-theme="light"] .mk-body .code-body code .hljs-doctag {
+  color: #032f62;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-title,
+html[data-theme="light"] .mk-body .code-body code .hljs-section,
+html[data-theme="light"] .mk-body .code-body code .hljs-selector-id {
+  color: #6f42c1;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-type,
+html[data-theme="light"] .mk-body .code-body code .hljs-class .hljs-title {
+  color: #6f42c1;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-tag,
+html[data-theme="light"] .mk-body .code-body code .hljs-name,
+html[data-theme="light"] .mk-body .code-body code .hljs-attribute {
+  color: #22863a;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-regexp,
+html[data-theme="light"] .mk-body .code-body code .hljs-link {
+  color: #032f62;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-symbol,
+html[data-theme="light"] .mk-body .code-body code .hljs-bullet {
+  color: #e36209;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-built_in,
+html[data-theme="light"] .mk-body .code-body code .hljs-builtin-name {
+  color: #005cc5;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-meta {
+  color: #b31d28;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-deletion {
+  background: #ffeef0;
+  color: #b31d28;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-addition {
+  background: #f0fff4;
+  color: #22863a;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-emphasis {
+  font-style: italic;
+}
+
+html[data-theme="light"] .mk-body .code-body code .hljs-strong {
+  font-weight: 600;
+}
+
+/* 暗色主题: github-dark */
+html[data-theme="dark"] .mk-body .code-body code .hljs-comment,
+html[data-theme="dark"] .mk-body .code-body code .hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-keyword,
+html[data-theme="dark"] .mk-body .code-body code .hljs-selector-tag,
+html[data-theme="dark"] .mk-body .code-body code .hljs-subst {
+  color: #ff7b72;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-number,
+html[data-theme="dark"] .mk-body .code-body code .hljs-literal,
+html[data-theme="dark"] .mk-body .code-body code .hljs-variable,
+html[data-theme="dark"] .mk-body .code-body code .hljs-template-variable,
+html[data-theme="dark"] .mk-body .code-body code .hljs-tag .hljs-attr {
+  color: #79c0ff;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-string,
+html[data-theme="dark"] .mk-body .code-body code .hljs-doctag {
+  color: #a5d6ff;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-title,
+html[data-theme="dark"] .mk-body .code-body code .hljs-section,
+html[data-theme="dark"] .mk-body .code-body code .hljs-selector-id {
+  color: #d2a8ff;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-type,
+html[data-theme="dark"] .mk-body .code-body code .hljs-class .hljs-title {
+  color: #d2a8ff;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-tag,
+html[data-theme="dark"] .mk-body .code-body code .hljs-name,
+html[data-theme="dark"] .mk-body .code-body code .hljs-attribute {
+  color: #7ee787;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-regexp,
+html[data-theme="dark"] .mk-body .code-body code .hljs-link {
+  color: #a5d6ff;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-symbol,
+html[data-theme="dark"] .mk-body .code-body code .hljs-bullet {
+  color: #ffa657;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-built_in,
+html[data-theme="dark"] .mk-body .code-body code .hljs-builtin-name {
+  color: #79c0ff;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-meta {
+  color: #f85149;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-deletion {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-addition {
+  background: rgba(63, 185, 80, 0.15);
+  color: #3fb950;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-emphasis {
+  font-style: italic;
+}
+
+html[data-theme="dark"] .mk-body .code-body code .hljs-strong {
+  font-weight: 600;
+}
+
+/* -------------------- 8.12 ASCII 框图特殊处理 -------------------- */
+
+/* 无语言标记的代码块（可能为 ASCII 框图） */
+.mk-body .code-block-wrapper[data-is-ascii="true"] .code-body code,
+.mk-body pre:has(> code.language-plaintext) .code-body code,
+.mk-body pre:has(> code:not([class*="language-"])) .code-body code {
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  font-variant-ligatures: none !important;
+  white-space: pre !important;
+}
+
+/* 为 ASCII 框图添加显式标记 */
+.mk-body .code-block-wrapper.ascii-art {
+  background: var(--bg-primary);
+}
+
+.mk-body .code-block-wrapper.ascii-art .code-body code {
+  line-height: 1.2;
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+/* -------------------- 行内代码（在 base.css 中定义，此处补充） -------------------- */
+
+.mk-body :not(pre) > code {
+  /* base.css 已定义基础样式，此处仅补充 */
+  word-break: break-word;
+}
+
+/* 代码块中的行内代码（不应有特殊样式） */
+.mk-body .code-body code code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* -------------------- diff 代码块特殊样式 -------------------- */
+
+.mk-body .code-body code .hljs-addition {
+  display: inline-block;
+  width: 100%;
+}
+
+.mk-body .code-body code .hljs-deletion {
+  display: inline-block;
+  width: 100%;
+}

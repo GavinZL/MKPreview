@@ -1,0 +1,6 @@
+export type { FileTreeNode, FileMeta, FsChangeType, FsChangeEvent, FsErrorEvent } from './fileTree'
+export type { Settings, ThemePreference, DisplayMode, WindowState } from './settings'
+export type { FileTab, TabItem, Tab, CursorPosition } from './tab'
+export type { TocHeading, ScrollMapping, SearchResult } from './markdown'
+export type { AppException, ErrorCode, ErrorLevel } from './error'
+export { ErrorCodes } from './error'

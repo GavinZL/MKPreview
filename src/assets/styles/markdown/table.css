@@ -1,0 +1,164 @@
+/* ============================================================
+   MKPreview - 表格渲染样式
+   文件: src/assets/styles/markdown/table.css
+   范围: .mk-body 下的 table 元素
+   规范: PRD 第八节 8.6
+   ============================================================ */
+
+/* -------------------- 表格滚动容器 -------------------- */
+
+.mk-body .table-wrapper {
+  overflow-x: auto;
+  margin: 1.2em 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* markdown-it 默认输出的 table 包装 */
+.mk-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--bg-primary);
+}
+
+/* 确保表格不被默认容器边框重复包裹 */
+.mk-body table:only-child {
+  margin: 0;
+}
+
+/* -------------------- 表头样式 -------------------- */
+
+.mk-body thead {
+  background: var(--bg-tertiary);
+}
+
+.mk-body thead th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.mk-body thead th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.mk-body thead th:last-child {
+  border-top-right-radius: 8px;
+}
+
+/* -------------------- 表体样式 -------------------- */
+
+.mk-body tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--text-primary);
+}
+
+/* 斑马纹：偶数行背景 */
+.mk-body tbody tr:nth-child(even) {
+  background: var(--bg-secondary);
+}
+
+/* 斑马纹：奇数行保持透明（继承父背景） */
+.mk-body tbody tr:nth-child(odd) {
+  background: transparent;
+}
+
+/* 悬浮行效果 */
+.mk-body tbody tr:hover {
+  background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-tertiary));
+}
+
+/* 悬浮时覆盖斑马纹 */
+.mk-body tbody tr:nth-child(even):hover,
+.mk-body tbody tr:nth-child(odd):hover {
+  background: color-mix(in srgb, var(--bg-secondary) 60%, var(--bg-tertiary));
+}
+
+/* -------------------- 对齐方式 -------------------- */
+
+/* 支持 Markdown 表格对齐语法：:---, :---:, ---: */
+.mk-body th[align="center"],
+.mk-body td[align="center"] {
+  text-align: center;
+}
+
+.mk-body th[align="right"],
+.mk-body td[align="right"] {
+  text-align: right;
+}
+
+.mk-body th[align="left"],
+.mk-body td[align="left"] {
+  text-align: left;
+}
+
+/* -------------------- 表格内行内元素 -------------------- */
+
+/* 表格内代码 */
+.mk-body table code {
+  white-space: nowrap;
+  font-size: 0.85em;
+  padding: 1px 4px;
+}
+
+/* 表格内加粗 */
+.mk-body table strong {
+  font-weight: 600;
+}
+
+/* 表格内链接 */
+.mk-body table a {
+  color: var(--accent);
+}
+
+/* 表格内删除线 */
+.mk-body table del {
+  color: var(--text-muted);
+}
+
+/* 表格内行内公式（KaTeX） */
+.mk-body table .katex {
+  font-size: 0.95em;
+}
+
+/* -------------------- 窄屏适配 -------------------- */
+
+@media (max-width: 640px) {
+  .mk-body table {
+    font-size: 13px;
+  }
+
+  .mk-body thead th,
+  .mk-body tbody td {
+    padding: 8px 10px;
+  }
+}
+
+/* -------------------- 打印样式 -------------------- */
+
+@media print {
+  .mk-body table {
+    border: 1px solid #ccc;
+  }
+
+  .mk-body thead th {
+    background: #f0f0f0 !important;
+    border-bottom: 2px solid #ccc;
+  }
+
+  .mk-body tbody tr {
+    background: transparent !important;
+  }
+
+  .mk-body tbody td {
+    border-bottom: 1px solid #ddd;
+  }
+}

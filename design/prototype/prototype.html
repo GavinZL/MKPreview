@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MKPreview - UI Design Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== 1. CSS Variables (Design Tokens) ===== */
+    :root {
+      /* Light Theme */
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8F9FA;
+      --bg-tertiary: #F1F3F5;
+      --bg-code: #F6F8FA;
+      --text-primary: #1A1A2E;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --border: #E5E7EB;
+      --accent: #3B82F6;
+      --accent-red: #EF4444;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-body: 'Noto Serif SC', Georgia, serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
+      --sidebar-width: 260px;
+      --toolbar-height: 40px;
+      --tabbar-height: 36px;
+      --statusbar-height: 24px;
+      --radius: 6px;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0D1117;
+      --bg-secondary: #161B22;
+      --bg-tertiary: #21262D;
+      --bg-code: #1C2128;
+      --text-primary: #E6EDF3;
+      --text-secondary: #8B949E;
+      --text-muted: #484F58;
+      --border: #30363D;
+      --accent: #58A6FF;
+      --accent-red: #F85149;
+      --accent-green: #3FB950;
+      --accent-amber: #D29922;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      overflow: hidden;
+    }
+
+    /* ===== 2. App Layout (CSS Grid) ===== */
+    .app {
+      display: grid;
+      grid-template-rows: var(--toolbar-height) var(--tabbar-height) 1fr var(--statusbar-height);
+      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-areas:
+        "sidebar toolbar"
+        "sidebar tabbar"
+        "sidebar content"
+        "sidebar status";
+      height: 100vh;
+      width: 100vw;
+      transition: grid-template-columns 0.2s ease;
+    }
+
+    .app.sidebar-collapsed {
+      grid-template-columns: 0px 1fr;
+    }
+
+    /* ===== 3. Toolbar ===== */
+    .toolbar {
+      grid-area: toolbar;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-center {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 2px;
+    }
+
+    .mode-btn {
+      padding: 5px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .mode-btn:hover { color: var(--text-primary); }
+    .mode-btn.active { background: var(--bg-primary); color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent;
+      color: var(--text-secondary);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover { background: var(--bg-secondary); color: var(--text-primary); }
+    .icon-btn svg { width: 16px; height: 16px; }
+
+    /* ===== 4. Sidebar ===== */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 180px;
+      max-width: 400px;
+    }
+
+    .sidebar-header {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-title {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-secondary);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .sidebar-search {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 5px 10px 5px 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 8px center;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+
+    .file-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .tree-node {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px 4px calc(12px + var(--depth, 0) * 14px);
+      cursor: pointer;
+      user-select: none;
+      border-radius: 4px;
+      margin: 0 4px;
+      transition: background 0.1s;
+    }
+
+    .tree-node:hover { background: var(--bg-tertiary); }
+    .tree-node.active { background: var(--accent); color: white; }
+    .tree-node.active .node-icon { color: white; }
+    .tree-node.active .node-badge { background: rgba(255,255,255,0.25); color: white; }
+
+    .node-chevron {
+      width: 14px; height: 14px;
+      color: var(--text-muted);
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    .node-chevron.collapsed { transform: rotate(-90deg); }
+    .node-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); }
+    .node-icon.folder { color: var(--accent-amber); }
+    .node-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
+    .node-badge {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sidebar-footer {
+      padding: 6px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    /* ===== 5. Tab Bar ===== */
+    .tabbar {
+      grid-area: tabbar;
+      display: flex;
+      align-items: flex-end;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding-left: 4px;
+      gap: 1px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      position: relative;
+    }
+
+    .tab:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-primary); }
+
+    .tab-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-amber);
+    }
+
+    .tab-close {
+      width: 14px; height: 14px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .tab:hover .tab-close { opacity: 1; }
+    .tab-close:hover { background: var(--border); }
+
+    /* ===== 6. Content Area ===== */
+    .content {
+      grid-area: content;
+      background: var(--bg-primary);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .content-inner {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+    }
+
+    /* ===== 7. Markdown Preview (.mk-body) ===== */
+    .mk-body {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--text-primary);
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 48px;
+    }
+
+    .mk-body h1 {
+      font-size: 2.2em;
+      font-weight: 700;
+      margin: 2.5em 0 1em;
+      padding-bottom: 0.4em;
+      border-bottom: 2px solid var(--border);
+      scroll-margin-top: 80px;
+    }
+
+    .mk-body h2 {
+      font-size: 1.7em;
+      font-weight: 700;
+      margin: 2em 0 0.8em;
+      padding-left: 12px;
+      border-left: 4px solid var(--accent-red);
+      scroll-margin-top: 80px;
+    }
+
+    .mk-body h3 { font-size: 1.4em; font-weight: 600; margin: 1.8em 0 0.6em; scroll-margin-top: 80px; }
+    .mk-body h4 { font-size: 1.2em; font-weight: 600; color: var(--text-secondary); margin: 1.5em 0 0.5em; }
+    .mk-body h5 { font-size: 1.05em; font-weight: 600; color: var(--text-secondary); margin: 1.2em 0 0.4em; }
+    .mk-body h6 { font-size: 1em; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 1em 0 0.4em; }
+    .mk-body h1:first-child { margin-top: 0; }
+
+    .mk-body p { margin-bottom: 1.2em; }
+
+    .mk-body strong { font-weight: 600; color: var(--text-primary); }
+    .mk-body em { font-style: italic; }
+    .mk-body del { text-decoration: line-through; color: var(--text-muted); }
+
+    .mk-body code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      background: var(--bg-code);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--accent-red);
+    }
+
+    .mk-body pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0;
+      margin: 1.2em 0;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .code-copy {
+      display: flex; align-items: center; gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .code-copy:hover { border-color: var(--accent); color: var(--accent); }
+
+    .mk-body pre code {
+      display: block;
+      padding: 14px 18px;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    .mk-body ul, .mk-body ol {
+      margin: 0 0 1.2em 1.5em;
+      padding-left: 1em;
+    }
+
+    .mk-body ul { list-style-type: disc; }
+    .mk-body ul ul { list-style-type: circle; }
+    .mk-body ul ul ul { list-style-type: square; }
+    .mk-body li { margin-bottom: 0.4em; }
+
+    .mk-body blockquote {
+      margin: 1.2em 0;
+      padding: 1em 1.2em;
+      border-left: 4px solid var(--accent);
+      background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+      border-radius: 0 6px 6px 0;
+      color: var(--text-secondary);
+    }
+
+    .mk-body blockquote p:last-child { margin-bottom: 0; }
+
+    .mk-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2em 0;
+      font-size: 14px;
+    }
+
+    .mk-body th, .mk-body td {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .mk-body thead th {
+      background: var(--bg-tertiary);
+      font-weight: 600;
+    }
+
+    .mk-body tbody tr:nth-child(even) { background: var(--bg-secondary); }
+    .mk-body tbody tr:hover { background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-tertiary)); }
+
+    .mk-body hr {
+      border: none;
+      height: 2px;
+      background: var(--border);
+      margin: 2em 0;
+    }
+
+    .mk-body a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .mk-body a:hover { text-decoration: underline; }
+
+    .mk-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      display: block;
+      margin: 1.2em auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .mk-body .mermaid {
+      display: flex;
+      justify-content: center;
+      padding: 1.5em;
+      margin: 1.2em 0;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .mk-body .katex-display {
+      margin: 1.5em 0;
+      overflow-x: auto;
+    }
+
+    /* ===== 8. Source Editor (CodeMirror-like) ===== */
+    .source-editor {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 20px 0;
+      background: var(--bg-primary);
+      height: 100%;
+      overflow: auto;
+    }
+
+    .editor-lines {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-line {
+      display: flex;
+      min-height: 22.4px;
+    }
+
+    .line-number {
+      width: 56px;
+      text-align: right;
+      padding-right: 16px;
+      color: var(--text-muted);
+      font-size: 12px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .line-content {
+      flex: 1;
+      white-space: pre;
+      color: var(--text-primary);
+    }
+
+    .line-content .token-heading { color: var(--accent-red); font-weight: 600; }
+    .line-content .token-code { color: var(--accent-green); }
+    .line-content .token-comment { color: var(--text-muted); font-style: italic; }
+    .line-content .token-link { color: var(--accent); text-decoration: underline; }
+    .line-content .token-strong { font-weight: 600; }
+    .line-content .token-em { font-style: italic; }
+
+    /* ===== 9. Split Mode ===== */
+    .split-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .split-pane {
+      overflow: auto;
+      position: relative;
+    }
+
+    .split-pane:first-child { border-right: 1px solid var(--border); }
+
+    .split-resizer {
+      width: 6px;
+      background: var(--border);
+      cursor: col-resize;
+      position: absolute;
+      left: 50%;
+      top: 0; bottom: 0;
+      transform: translateX(-50%);
+      z-index: 10;
+      transition: background 0.15s;
+    }
+
+    .split-resizer:hover { background: var(--accent); }
+
+    /* ===== 10. Overlays ===== */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 100;
+      display: none;
+    }
+
+    .overlay.active { display: flex; flex-direction: column; }
+
+    /* Search Panel */
+    .search-panel {
+      padding: 20px 24px;
+    }
+
+    .search-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .search-input-lg {
+      flex: 1;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-input-lg:focus { border-color: var(--accent); }
+
+    .search-filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .filter-chip {
+      padding: 4px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .search-results {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .result-item {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: background 0.1s;
+      border: 1px solid transparent;
+    }
+
+    .result-item:hover { background: var(--bg-secondary); border-color: var(--border); }
+
+    .result-path {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .result-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+
+    .result-context {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .result-context mark {
+      background: color-mix(in srgb, var(--accent) 30%, transparent);
+      color: var(--accent);
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    /* Settings Panel */
+    .settings-panel {
+      padding: 20px 24px;
+      max-width: 600px;
+    }
+
+    .settings-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-section {
+      margin-bottom: 24px;
+    }
+
+    .settings-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-label {
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .setting-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .toggle {
+      width: 36px;
+      height: 20px;
+      background: var(--border);
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 2px; left: 2px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    .toggle.on { background: var(--accent); }
+    .toggle.on::after { transform: translateX(16px); }
+
+    .select-box {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 12px;
+      min-width: 140px;
+      outline: none;
+    }
+
+    /* TOC Panel */
+    .toc-panel {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      width: 220px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      z-index: 50;
+      max-height: calc(100% - 32px);
+      overflow-y: auto;
+    }
+
+    .toc-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .toc-item {
+      padding: 4px 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.1s;
+    }
+
+    .toc-item:hover { color: var(--accent); }
+    .toc-item.h2 { padding-left: 8px; }
+    .toc-item.h3 { padding-left: 16px; }
+
+    /* ===== 11. Status Bar ===== */
+    .statusbar {
+      grid-area: status;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      background: var(--bg-tertiary);
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-sep { color: var(--border); }
+
+    /* ===== 12. Empty State ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      gap: 12px;
+    }
+
+    .empty-state svg { width: 48px; height: 48px; opacity: 0.4; }
+    .empty-state p { font-size: 14px; }
+
+    /* ===== 13. Scrollbar ===== */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; opacity: 0.3; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+    /* ===== 14. Animations ===== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeIn 0.2s ease; }
+
+    /* ===== 15. Resizer Handle ===== */
+    .sidebar-resizer {
+      position: absolute;
+      right: -3px;
+      top: 0; bottom: 0;
+      width: 6px;
+      cursor: col-resize;
+      z-index: 200;
+      transition: background 0.15s;
+    }
+
+    .sidebar-resizer:hover { background: var(--accent); }
+
+    /* ===== 16. Lightbox ===== */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .lightbox.active { display: flex; }
+    .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <!-- ==================== APP SHELL ==================== -->
+  <div class="app" id="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-resizer"></div>
+      <div class="sidebar-header">
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="sidebar-title">Knowledge/learn</span>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="搜索文件...">
+      </div>
+      <div class="file-tree" id="fileTree"></div>
+      <div class="sidebar-footer">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.67 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.67a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>设置</span>
+      </div>
+    </aside>
+
+    <!-- Toolbar -->
+    <header class="toolbar">
+      <div class="toolbar-left">
+        <button class="icon-btn" id="toggleSidebar" title="切换侧栏 (Cmd+B)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+      </div>
+      <div class="toolbar-center">
+        <button class="mode-btn active" data-mode="preview">Preview</button>
+        <button class="mode-btn" data-mode="source">Source</button>
+        <button class="mode-btn" data-mode="split">Split</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="icon-btn" id="toggleSearch" title="全局搜索 (Cmd+Shift+F)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button class="icon-btn" id="toggleTheme" title="切换主题 (Cmd+Shift+T)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+        <button class="icon-btn" title="最大化">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+        <button class="icon-btn" title="关闭窗口" style="color: var(--accent-red);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tab Bar -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab active">
+        <span class="tab-dot" style="display:none;"></span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>指针.md</span>
+        <span class="tab-close"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </button>
+      <button class="tab">
+        <span class="tab-dot"></span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>变量.md</span>
+        <span class="tab-close"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </button>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content" id="content">
+
+      <!-- Preview Mode -->
+      <div class="content-inner" id="previewMode">
+        <article class="mk-body">
+          <h1>指针基础</h1>
+          <p>指针是存储内存地址的变量。</p>
+
+          <div class="code-header">
+            <span>cpp</span>
+            <button class="code-copy">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              复制
+            </button>
+          </div>
+          <pre><code>int x = 10;
+int* ptr = &x;  // ptr 指向 x 的地址
+*ptr = 20;      // 通过指针修改 x 的值</code></pre>
+
+          <h2>注意事项</h2>
+          <blockquote>
+            <p>⚠️ <strong>危险</strong>：未初始化的指针可能导致程序崩溃。</p>
+          </blockquote>
+
+          <div class="code-header">
+            <span>cpp</span>
+            <button class="code-copy">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              复制
+            </button>
+          </div>
+          <pre><code>int* ptr = nullptr;  // 安全的初始化方式</code></pre>
+
+          <h2>指针运算</h2>
+          <table>
+            <thead>
+              <tr><th>运算符</th><th>描述</th><th>示例</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>&</code></td><td>取地址</td><td><code>int* p = &x;</code></td></tr>
+              <tr><td><code>*</code></td><td>解引用</td><td><code>int v = *p;</code></td></tr>
+              <tr><td><code>+</code></td><td>指针偏移</td><td><code>p + 1</code></td></tr>
+              <tr><td><code>-</code></td><td>指针差值</td><td><code>p1 - p2</code></td></tr>
+            </tbody>
+          </table>
+
+          <h3>常见错误</h3>
+          <ul>
+            <li>空指针解引用</li>
+            <li>野指针访问</li>
+            <li>内存泄漏</li>
+          </ul>
+
+          <h2>Mermaid 图表示例</h2>
+          <div class="mermaid">
+            <svg viewBox="0 0 300 120" width="300" height="120">
+              <rect x="10" y="10" width="80" height="40" rx="4" fill="var(--bg-tertiary)" stroke="var(--border)"/>
+              <text x="50" y="35" text-anchor="middle" fill="var(--text-primary)" font-size="12">变量 x</text>
+              <rect x="150" y="10" width="80" height="40" rx="4" fill="var(--bg-tertiary)" stroke="var(--border)"/>
+              <text x="190" y="35" text-anchor="middle" fill="var(--text-primary)" font-size="12">指针 ptr</text>
+              <path d="M90 30 L150 30" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow)"/>
+              <rect x="150" y="70" width="80" height="40" rx="4" fill="var(--bg-tertiary)" stroke="var(--accent)" stroke-width="2"/>
+              <text x="190" y="95" text-anchor="middle" fill="var(--text-primary)" font-size="12">地址 &amp;x</text>
+              <path d="M190 50 L190 70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow)"/>
+              <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--accent)"/></marker></defs>
+            </svg>
+          </div>
+
+          <p>更多内容请参阅 <a href="#">C++ 官方文档</a>。</p>
+        </article>
+
+        <!-- TOC Panel -->
+        <div class="toc-panel">
+          <div class="toc-title">目录</div>
+          <div class="toc-item">指针基础</div>
+          <div class="toc-item h2">注意事项</div>
+          <div class="toc-item h2">指针运算</div>
+          <div class="toc-item h3">常见错误</div>
+          <div class="toc-item h2">Mermaid 图表示例</div>
+        </div>
+      </div>
+
+      <!-- Source Mode -->
+      <div class="content-inner" id="sourceMode" style="display:none;">
+        <div class="source-editor" id="sourceEditor"></div>
+      </div>
+
+      <!-- Split Mode -->
+      <div class="content-inner" id="splitMode" style="display:none;">
+        <div class="split-view">
+          <div class="split-pane">
+            <div class="source-editor" id="splitSourceEditor"></div>
+          </div>
+          <div class="split-pane" style="overflow:auto;">
+            <article class="mk-body" style="padding: 24px 32px;">
+              <h1>指针基础</h1>
+              <p>指针是存储内存地址的变量。</p>
+              <div class="code-header"><span>cpp</span><button class="code-copy"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制</button></div>
+              <pre><code>int x = 10;
+int* ptr = &x;
+*ptr = 20;</code></pre>
+              <h2>注意事项</h2>
+              <blockquote><p>⚠️ <strong>危险</strong>：未初始化的指针可能导致程序崩溃。</p></blockquote>
+            </article>
+          </div>
+          <div class="split-resizer"></div>
+        </div>
+      </div>
+
+      <!-- Search Overlay -->
+      <div class="overlay" id="searchOverlay">
+        <div class="search-panel">
+          <div class="search-header">
+            <input type="text" class="search-input-lg" placeholder="全局搜索 (Cmd+Shift+F)" value="指针">
+          </div>
+          <div class="search-filters">
+            <span class="filter-chip active">全部</span>
+            <span class="filter-chip">文件名</span>
+            <span class="filter-chip">内容</span>
+          </div>
+          <div class="search-results">
+            <div class="result-item">
+              <div class="result-path">Cpp/02_进阶/指针.md</div>
+              <div class="result-title">指针基础</div>
+              <div class="result-context"><mark>指针</mark>是存储内存地址的变量。未初始化的<mark>指针</mark>可能导致程序崩溃。</div>
+            </div>
+            <div class="result-item">
+              <div class="result-path">Cpp/01_基础/变量.md</div>
+              <div class="result-title">变量与常量</div>
+              <div class="result-context">每个变量都有内存地址，可以通过 &amp; 运算符获取地址，赋值给<mark>指针</mark>。</div>
+            </div>
+            <div class="result-item">
+              <div class="result-path">Swift/01_语法/可选类型.md</div>
+              <div class="result-title">可选类型与解包</div>
+              <div class="result-context">Swift 中的可选类型类似于 C++ 中的<mark>指针</mark>概念，但更加安全。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Overlay -->
+      <div class="overlay" id="settingsOverlay">
+        <div class="settings-panel">
+          <div class="settings-title">设置</div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">外观</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">主题</div>
+                <div class="setting-desc">选择应用界面主题</div>
+              </div>
+              <select class="select-box">
+                <option>跟随系统</option>
+                <option>亮色</option>
+                <option selected>暗色</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">正文字体</div>
+                <div class="setting-desc">Markdown 渲染字体</div>
+              </div>
+              <select class="select-box">
+                <option selected>霞鹜文楷</option>
+                <option>Noto Serif SC</option>
+                <option>系统默认</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">代码字体</div>
+                <div class="setting-desc">代码块与编辑器字体</div>
+              </div>
+              <select class="select-box">
+                <option selected>JetBrains Mono</option>
+                <option>Fira Code</option>
+                <option>SF Mono</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">编辑器</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">自动保存</div>
+                <div class="setting-desc">3 秒无操作后自动保存</div>
+              </div>
+              <div class="toggle on"></div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">显示行号</div>
+                <div class="setting-desc">源码编辑器显示行号</div>
+              </div>
+              <div class="toggle on"></div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">代码折叠</div>
+                <div class="setting-desc">允许折叠代码块和标题</div>
+              </div>
+              <div class="toggle"></div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">预览</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Mermaid 图表</div>
+                <div class="setting-desc">渲染 Mermaid 代码块</div>
+              </div>
+              <div class="toggle on"></div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">KaTeX 数学公式</div>
+                <div class="setting-desc">渲染 LaTeX 数学公式</div>
+              </div>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Status Bar -->
+    <footer class="statusbar">
+      <div class="status-left">
+        <span>UTF-8</span>
+        <span class="status-sep">|</span>
+        <span>Markdown</span>
+        <span class="status-sep">|</span>
+        <span>19 行</span>
+      </div>
+      <div class="status-right">
+        <span>已保存</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <img src="" alt="">
+  </div>
+
+  <script>
+    // ==================== File Tree Data ====================
+    const treeData = [
+      { name: '搜索', icon: 'search', isDir: true, expanded: true, children: [] },
+      {
+        name: 'Cpp', isDir: true, expanded: true, children: [
+          {
+            name: '01_类型系统与语言基础', isDir: true, expanded: false, children: [
+              { name: '变量.md', isDir: false },
+              { name: '函数.md', isDir: false },
+              { name: '类型推导.md', isDir: false }
+            ]
+          },
+          {
+            name: '02_指针与引用', isDir: true, expanded: true, children: [
+              { name: '指针.md', isDir: false, active: true },
+              { name: '引用.md', isDir: false },
+              { name: '智能指针.md', isDir: false }
+            ]
+          },
+          { name: 'README.md', isDir: false }
+        ]
+      },
+      {
+        name: 'Swift', isDir: true, expanded: false, children: [
+          {
+            name: '01_语法基础', isDir: true, expanded: false, children: [
+              { name: '可选类型.md', isDir: false },
+              { name: '闭包.md', isDir: false }
+            ]
+          },
+          { name: 'iOS.md', isDir: false }
+        ]
+      },
+      {
+        name: 'iOS', isDir: true, expanded: false, children: [
+          { name: 'UIKit.md', isDir: false },
+          { name: 'SwiftUI.md', isDir: false }
+        ]
+      },
+      {
+        name: 'Algorithm', isDir: true, expanded: false, children: [
+          { name: '动态规划.md', isDir: false },
+          { name: '图论.md', isDir: false }
+        ]
+      }
+    ];
+
+    // ==================== Render File Tree ====================
+    function renderTree(nodes, depth = 0) {
+      return nodes.map(node => {
+        const chevron = node.isDir
+          ? `<svg class="node-chevron ${node.expanded ? '' : 'collapsed'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>`
+          : '<span style="width:14px"></span>';
+        const icon = node.isDir
+          ? `<svg class="node-icon folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`
+          : `<svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+        const badge = node.isDir && node.children
+          ? `<span class="node-badge">${countFiles(node.children)}</span>`
+          : '';
+        const activeClass = node.active ? 'active' : '';
+        const childrenHtml = node.expanded && node.children
+          ? `<div class="tree-children">${renderTree(node.children, depth + 1)}</div>`
+          : '';
+        return `
+          <div class="tree-node ${activeClass}" style="--depth:${depth}">
+            ${chevron}${icon}<span class="node-label">${node.name}</span>${badge}
+          </div>
+          ${childrenHtml}
+        `;
+      }).join('');
+    }
+
+    function countFiles(nodes) {
+      return nodes.reduce((sum, n) => sum + (n.isDir ? (n.children ? countFiles(n.children) : 0) : 1), 0);
+    }
+
+    document.getElementById('fileTree').innerHTML = renderTree(treeData);
+
+    // ==================== Source Editor Content ====================
+    const sourceLines = [
+      { num: 1, text: '# 指针基础', cls: 'token-heading' },
+      { num: 2, text: '', cls: '' },
+      { num: 3, text: '指针是存储内存地址的变量。', cls: '' },
+      { num: 4, text: '', cls: '' },
+      { num: 5, text: '```cpp', cls: 'token-code' },
+      { num: 6, text: 'int x = 10;', cls: '' },
+      { num: 7, text: 'int* ptr = &x;  // ptr 指向 x 的地址', cls: 'token-comment' },
+      { num: 8, text: '*ptr = 20;      // 通过指针修改 x 的值', cls: 'token-comment' },
+      { num: 9, text: '```', cls: 'token-code' },
+      { num: 10, text: '', cls: '' },
+      { num: 11, text: '## 注意事项', cls: 'token-heading' },
+      { num: 12, text: '', cls: '' },
+      { num: 13, text: '> ⚠️ **危险**：未初始化的指针可能导致程序崩溃。', cls: '' },
+      { num: 14, text: '', cls: '' },
+      { num: 15, text: '```cpp', cls: 'token-code' },
+      { num: 16, text: 'int* ptr = nullptr;  // 安全的初始化方式', cls: 'token-comment' },
+      { num: 17, text: '```', cls: 'token-code' },
+      { num: 18, text: '', cls: '' },
+      { num: 19, text: '## 指针运算', cls: 'token-heading' }
+    ];
+
+    function renderEditor(containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '<div class="editor-lines">' +
+        sourceLines.map(l => `
+          <div class="editor-line">
+            <span class="line-number">${l.num}</span>
+            <span class="line-content ${l.cls}">${escapeHtml(l.text) || ' '}</span>
+          </div>
+        `).join('') +
+      '</div>';
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    }
+
+    renderEditor('sourceEditor');
+    renderEditor('splitSourceEditor');
+
+    // ==================== Mode Switching ====================
+    const modes = {
+      preview: document.getElementById('previewMode'),
+      source: document.getElementById('sourceMode'),
+      split: document.getElementById('splitMode')
+    };
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        Object.values(modes).forEach(el => el.style.display = 'none');
+        modes[btn.dataset.mode].style.display = 'block';
+      });
+    });
+
+    // ==================== Theme Toggle ====================
+    let isDark = true;
+    document.getElementById('toggleTheme').addEventListener('click', () => {
+      isDark = !isDark;
+      document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    });
+
+    // ==================== Sidebar Toggle ====================
+    document.getElementById('toggleSidebar').addEventListener('click', () => {
+      document.getElementById('app').classList.toggle('sidebar-collapsed');
+    });
+
+    // ==================== Search Overlay ====================
+    const searchOverlay = document.getElementById('searchOverlay');
+    document.getElementById('toggleSearch').addEventListener('click', () => {
+      searchOverlay.classList.toggle('active');
+      settingsOverlay.classList.remove('active');
+    });
+
+    // ==================== Settings Overlay ====================
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    document.querySelector('.sidebar-footer').addEventListener('click', () => {
+      settingsOverlay.classList.toggle('active');
+      searchOverlay.classList.remove('active');
+    });
+
+    // ==================== Filter Chips ====================
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.parentElement.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // ==================== Toggle Switches ====================
+    document.querySelectorAll('.toggle').forEach(t => {
+      t.addEventListener('click', () => t.classList.toggle('on'));
+    });
+
+    // ==================== Keyboard Shortcuts ====================
+    document.addEventListener('keydown', e => {
+      const cmd = e.metaKey || e.ctrlKey;
+      if (cmd && e.key === 'b') { e.preventDefault(); document.getElementById('toggleSidebar').click(); }
+      if (cmd && e.shiftKey && e.key === 'f') { e.preventDefault(); document.getElementById('toggleSearch').click(); }
+      if (cmd && e.shiftKey && e.key === 't') { e.preventDefault(); document.getElementById('toggleTheme').click(); }
+      if (cmd && e.key === '1') { e.preventDefault(); document.querySelector('[data-mode="preview"]').click(); }
+      if (cmd && e.key === '2') { e.preventDefault(); document.querySelector('[data-mode="source"]').click(); }
+      if (cmd && e.key === '3') { e.preventDefault(); document.querySelector('[data-mode="split"]').click(); }
+    });
+  </script>
+
+</body>
+</html>

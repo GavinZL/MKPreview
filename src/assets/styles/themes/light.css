@@ -1,0 +1,49 @@
+[data-theme="light"],
+:root:not([data-theme="dark"]) {
+  /* 背景色 */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F9FA;
+  --bg-tertiary: #F1F3F5;
+  --bg-code: #F6F8FA;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-hover: rgba(59, 130, 246, 0.08);
+  --bg-active: rgba(59, 130, 246, 0.12);
+
+  /* 文字色 */
+  --text-primary: #1A1A2E;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --text-inverse: #FFFFFF;
+  --text-link: #3B82F6;
+  --text-link-hover: #2563EB;
+
+  /* 边框色 */
+  --border: #E5E7EB;
+  --border-hover: #D1D5DB;
+  --border-focus: #3B82F6;
+  --divider: #E5E7EB;
+
+  /* 强调色 */
+  --accent: #3B82F6;
+  --accent-hover: #2563EB;
+  --accent-red: #EF4444;
+  --accent-green: #10B981;
+  --accent-amber: #F59E0B;
+  --accent-purple: #8B5CF6;
+
+  /* 状态色 */
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error: #EF4444;
+  --status-info: #3B82F6;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* 滚动条 */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(156, 163, 175, 0.4);
+  --scrollbar-thumb-hover: rgba(107, 114, 128, 0.6);
+}

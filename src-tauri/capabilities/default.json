@@ -1,0 +1,20 @@
+{
+  "identifier": "default",
+  "description": "MKPreview 默认能力集合 — Phase 2",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "fs:allow-read",
+    "fs:allow-read-dir",
+    "fs:allow-write",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$APPDATA" },
+        { "path": "$APPDATA/**" }
+      ]
+    },
+    "shell:allow-open"
+  ]
+}
