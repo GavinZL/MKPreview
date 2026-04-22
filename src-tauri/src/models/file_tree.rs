@@ -23,6 +23,7 @@ pub struct FileMeta {
     pub modified: u64,
     /// Unix timestamp (seconds since epoch)
     pub created: u64,
+    pub is_dir: bool,
 }
 
 /// 文件系统变更类型

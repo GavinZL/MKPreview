@@ -1,7 +1,27 @@
 <template>
   <header class="toolbar">
-    <!-- 左侧：侧栏折叠按钮 + 当前目录名称 -->
+    <!-- 左侧：导航回退/前进 + 侧栏折叠按钮 + 当前目录名称 -->
     <div class="toolbar-left">
+      <button
+        class="icon-btn"
+        :disabled="!navigationStore.canGoBack"
+        title="回退"
+        @click="handleGoBack"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+      <button
+        class="icon-btn"
+        :disabled="!navigationStore.canGoForward"
+        title="前进"
+        @click="handleGoForward"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </button>
       <button
         class="icon-btn"
         title="切换侧栏"
@@ -21,9 +41,6 @@
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
       </button>
-      <span v-if="fileTreeStore.rootPath" class="toolbar-path">
-        {{ fileTreeStore.rootName }}
-      </span>
     </div>
 
     <!-- 中部：模式切换按钮组 -->
@@ -67,16 +84,6 @@
     <div class="toolbar-right">
       <button
         class="icon-btn"
-        title="搜索"
-        @click="uiStore.searchPanelVisible = !uiStore.searchPanelVisible"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-      </button>
-      <button
-        class="icon-btn"
         title="设置"
         @click="uiStore.settingsPanelVisible = true"
       >
@@ -112,16 +119,26 @@
 <script setup lang="ts">
 import { useUiStore } from '@/stores/uiStore'
 import { useSettingsStore } from '@/stores/settingsStore'
-import { useFileTreeStore } from '@/stores/fileTreeStore'
+import { useNavigationStore } from '@/stores/navigationStore'
 import { useMenuEvents } from '@/composables/useMenuEvents'
+import { useNavigationActions } from '@/composables/useNavigationActions'
 
 const uiStore = useUiStore()
 const settingsStore = useSettingsStore()
-const fileTreeStore = useFileTreeStore()
+const navigationStore = useNavigationStore()
 const { openDirectoryDialog } = useMenuEvents()
+const { navigateBack, navigateForward } = useNavigationActions()
 
 function switchMode(mode: 'preview' | 'source' | 'split') {
   settingsStore.setDisplayMode(mode)
+}
+
+function handleGoBack() {
+  navigateBack()
+}
+
+function handleGoForward() {
+  navigateForward()
 }
 
 function toggleTheme() {
@@ -220,9 +237,14 @@ function toggleTheme() {
   transition: all 0.15s ease;
 }
 
-.icon-btn:hover {
+.icon-btn:hover:not(:disabled) {
   background: var(--bg-secondary);
   color: var(--text-primary);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .icon-btn svg {

@@ -12,7 +12,8 @@
       "identifier": "fs:scope",
       "allow": [
         { "path": "$APPDATA" },
-        { "path": "$APPDATA/**" }
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
       ]
     },
     "shell:allow-open"

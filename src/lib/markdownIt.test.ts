@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import MarkdownIt from 'markdown-it'
-import { createMarkdownIt, renderMarkdown } from './markdownIt'
+import { createMarkdownIt, renderMarkdown, resolveRelativePath } from './markdownIt'
 
 describe('createMarkdownIt', () => {
   it('返回 MarkdownIt 实例', () => {
@@ -61,16 +61,28 @@ describe('createMarkdownIt', () => {
     expect(html).not.toContain('checked')
   })
 
-  it('图片路径转换：相对路径 → asset:// 协议', () => {
+  it('图片路径转换：相对路径 → 绝对路径', () => {
     const md = createMarkdownIt({ baseDir: '/docs' })
     const html = md.render('![alt](image.png)')
-    expect(html).toContain('asset:///docs/image.png')
+    expect(html).toContain('/docs/image.png')
   })
 
-  it('图片路径转换：绝对路径不转换', () => {
+  it('图片路径转换：绝对路径保持不变', () => {
     const md = createMarkdownIt({ baseDir: '/docs' })
     const html = md.render('![alt](/absolute.png)')
-    expect(html).not.toContain('asset://')
+    expect(html).toContain('/absolute.png')
+  })
+
+  it('图片路径转换：网络图片不转换', () => {
+    const md = createMarkdownIt({ baseDir: '/docs' })
+    const html = md.render('![alt](https://example.com/img.png)')
+    expect(html).toContain('https://example.com/img.png')
+  })
+
+  it('图片路径转换：data URI 不转换', () => {
+    const md = createMarkdownIt({ baseDir: '/docs' })
+    const html = md.render('![alt](data:image/png;base64,abc)')
+    expect(html).toContain('data:image/png;base64,abc')
   })
 
   it('外部链接：http:// 链接添加 target="_blank" 和 rel="noopener noreferrer"', () => {
@@ -161,6 +173,88 @@ describe('renderMarkdown', () => {
 
   it('传递 baseDir 参数', () => {
     const html = renderMarkdown('![img](pic.png)', '/docs')
-    expect(html).toContain('asset:///docs/pic.png')
+    expect(html).toContain('/docs/pic.png')
+  })
+})
+
+describe('resolveRelativePath', () => {
+  it('解析 ./ 前缀路径', () => {
+    expect(resolveRelativePath('/docs/project', './sub/file.md')).toBe('/docs/project/sub/file.md')
+  })
+
+  it('解析 ../ 前缀路径', () => {
+    expect(resolveRelativePath('/docs/project/sub', '../parent.md')).toBe('/docs/project/parent.md')
+  })
+
+  it('解析多层 ../ 路径', () => {
+    expect(resolveRelativePath('/a/b/c/d', '../../file.md')).toBe('/a/b/file.md')
+  })
+
+  it('绝对路径不转换', () => {
+    expect(resolveRelativePath('/docs', '/absolute/path.md')).toBe('/absolute/path.md')
+  })
+
+  it('空 base 返回原路径', () => {
+    expect(resolveRelativePath('', './file.md')).toBe('./file.md')
+  })
+
+  it('空 relativePath 返回原路径', () => {
+    expect(resolveRelativePath('/docs', '')).toBe('')
+  })
+})
+
+describe('内部链接处理', () => {
+  it('相对路径 .md 链接添加 internal-link 类和 data-file-path', () => {
+    const md = createMarkdownIt({ baseDir: '/docs/project' })
+    const html = md.render('[文档](./subfolder/doc.md)')
+    expect(html).toContain('class="internal-link"')
+    expect(html).toContain('data-file-path="/docs/project/subfolder/doc.md"')
+  })
+
+  it('父目录 .md 链接正确解析路径', () => {
+    const md = createMarkdownIt({ baseDir: '/docs/project/sub' })
+    const html = md.render('[返回](../parent.md)')
+    expect(html).toContain('data-file-path="/docs/project/parent.md"')
+  })
+
+  it('.md 链接带锚点时保留 hash', () => {
+    const md = createMarkdownIt({ baseDir: '/docs' })
+    const html = md.render('[章节](./doc.md#section)')
+    expect(html).toContain('data-file-path="/docs/doc.md"')
+    expect(html).toContain('data-hash="#section"')
+  })
+
+  it('.markdown 扩展名也被识别为内部链接', () => {
+    const md = createMarkdownIt({ baseDir: '/docs' })
+    const html = md.render('[文档](./doc.markdown)')
+    expect(html).toContain('class="internal-link"')
+    expect(html).toContain('data-file-path="/docs/doc.markdown"')
+  })
+
+  it('外部链接不受影响', () => {
+    const md = createMarkdownIt({ baseDir: '/docs' })
+    const html = md.render('[外部](https://example.com)')
+    expect(html).toContain('class="external-link"')
+    expect(html).not.toContain('internal-link')
+  })
+
+  it('内部链接的 href 设为 javascript:void(0)', () => {
+    const md = createMarkdownIt({ baseDir: '/docs' })
+    const html = md.render('[文档](./doc.md)')
+    expect(html).toContain('href="javascript:void(0)"')
+  })
+})
+
+describe('图片路径解析', () => {
+  it('相对路径图片解析为绝对路径', () => {
+    const md = createMarkdownIt({ baseDir: '/docs' })
+    const html = md.render('![图片](./images/test.png)')
+    expect(html).toContain('/docs/images/test.png')
+  })
+
+  it('父目录图片路径正确解析', () => {
+    const md = createMarkdownIt({ baseDir: '/docs/sub' })
+    const html = md.render('![图片](../images/test.png)')
+    expect(html).toContain('/docs/images/test.png')
   })
 })

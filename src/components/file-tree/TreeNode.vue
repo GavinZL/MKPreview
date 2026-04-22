@@ -19,9 +19,14 @@
       <span v-else class="node-spacer" />
 
       <!-- 图标 -->
-      <span class="node-icon" :class="{ folder: node.isDir }">
+      <span class="node-icon" :class="fileTypeIcon">
         <svg v-if="node.isDir" viewBox="0 0 24 24" width="16" height="16">
           <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        </svg>
+        <svg v-else-if="fileTypeIcon === 'image'" viewBox="0 0 24 24" width="16" height="16">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+          <path d="M3 16l5-5 4 4 5-5 4 4" stroke="currentColor" stroke-width="1.5" fill="none"/>
         </svg>
         <svg v-else viewBox="0 0 24 24" width="16" height="16">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5" fill="none"/>
@@ -65,6 +70,9 @@
 import { computed } from 'vue'
 import { useFileTreeStore } from '@/stores/fileTreeStore'
 import { useTabStore } from '@/stores/tabStore'
+import { useNavigationStore } from '@/stores/navigationStore'
+import { useSettingsStore } from '@/stores/settingsStore'
+import { useNavigationActions } from '@/composables/useNavigationActions'
 import type { FileTreeNode } from '@/types'
 import { naturalSort } from '@/lib/naturalSort'
 
@@ -76,6 +84,9 @@ const props = defineProps<{
 
 const fileTreeStore = useFileTreeStore()
 const tabStore = useTabStore()
+const navigationStore = useNavigationStore()
+const settingsStore = useSettingsStore()
+const { saveCurrentScrollTop } = useNavigationActions()
 
 const isActive = computed(() => fileTreeStore.selectedPath === props.node.path)
 const isExpanded = computed(() => fileTreeStore.expandedPaths.has(props.node.path))
@@ -93,13 +104,49 @@ const sortedChildren = computed(() => {
   })
 })
 
+const fileTypeIcon = computed(() => {
+  if (props.node.isDir) return 'folder'
+  const ext = props.node.name.split('.').pop()?.toLowerCase() || ''
+  const iconMap: Record<string, string> = {
+    'md': 'markdown',
+    'markdown': 'markdown',
+    'png': 'image',
+    'jpg': 'image',
+    'jpeg': 'image',
+    'gif': 'image',
+    'svg': 'image',
+    'webp': 'image',
+    'json': 'config',
+    'yaml': 'config',
+    'yml': 'config',
+    'toml': 'config',
+    'xml': 'config',
+    'pdf': 'pdf',
+    'txt': 'text',
+    'js': 'code',
+    'ts': 'code',
+    'rs': 'code',
+    'py': 'code',
+    'css': 'code',
+    'html': 'code',
+  }
+  return iconMap[ext] || 'file'
+})
+
+function isMarkdownFile(name: string): boolean {
+  const lower = name.toLowerCase()
+  return lower.endsWith('.md') || lower.endsWith('.markdown')
+}
+
 function handleClick() {
   if (props.node.isDir) {
     fileTreeStore.toggleExpand(props.node.path)
   }
   fileTreeStore.selectNode(props.node.path)
 
-  if (!props.node.isDir) {
+  if (!props.node.isDir && isMarkdownFile(props.node.name)) {
+    saveCurrentScrollTop()
+    navigationStore.pushEntry(props.node.path, props.node.name, undefined, settingsStore.displayMode)
     tabStore.openFile(props.node.path, props.node.name)
   }
 }
@@ -124,10 +171,12 @@ function handleKeydown(e: KeyboardEvent) {
       break
     case 'Enter':
       e.preventDefault()
-      if (!props.node.isDir) {
+      if (!props.node.isDir && isMarkdownFile(props.node.name)) {
         fileTreeStore.selectNode(props.node.path)
+        saveCurrentScrollTop()
+        navigationStore.pushEntry(props.node.path, props.node.name, undefined, settingsStore.displayMode)
         tabStore.openFile(props.node.path, props.node.name)
-      } else {
+      } else if (props.node.isDir) {
         fileTreeStore.toggleExpand(props.node.path)
       }
       break
@@ -231,6 +280,30 @@ const highlightParts = computed<HighlightPart[]>(() => {
 
 .node-icon.folder {
   color: var(--accent-amber);
+}
+
+.node-icon.markdown {
+  color: #3b82f6;
+}
+
+.node-icon.image {
+  color: #22c55e;
+}
+
+.node-icon.config {
+  color: #f97316;
+}
+
+.node-icon.code {
+  color: #a855f7;
+}
+
+.node-icon.pdf {
+  color: #ef4444;
+}
+
+.node-icon.text {
+  color: #6b7280;
 }
 
 .node-label {

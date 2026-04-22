@@ -2,6 +2,7 @@ import MarkdownIt from 'markdown-it'
 import anchor from 'markdown-it-anchor'
 import taskLists from 'markdown-it-task-lists'
 import { renderKatex } from './katexConfig'
+import { isAsciiArt } from './highlighter'
 
 export interface MkMarkdownItOptions {
   enableAnchor?: boolean
@@ -9,6 +10,24 @@ export interface MkMarkdownItOptions {
   baseDir?: string
   enableSourceMap?: boolean
   enableKaTeX?: boolean
+}
+
+export function resolveRelativePath(base: string, relativePath: string): string {
+  if (!base || !relativePath) return relativePath
+  if (relativePath.startsWith('/')) return relativePath
+
+  let rel = relativePath.startsWith('./') ? relativePath.substring(2) : relativePath
+  let dir = base
+
+  while (rel.startsWith('../')) {
+    rel = rel.substring(3)
+    const lastSlash = dir.lastIndexOf('/')
+    if (lastSlash > 0) {
+      dir = dir.substring(0, lastSlash)
+    }
+  }
+
+  return `${dir}/${rel}`
 }
 
 export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt {
@@ -153,7 +172,7 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
 
   // === 自定义渲染规则 ===
 
-  // 规则1: 图片路径转换（相对路径 → asset:// 协议）
+  // 规则1: 图片路径转换（相对路径 → 绝对路径，供前端 convertFileSrc 使用）
   const defaultImageRender = md.renderer.rules.image ||
     ((tokens: any, idx: any, options: any, _env: any, self: any) => self.renderToken(tokens, idx, options))
 
@@ -162,16 +181,16 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
     const srcIndex = token.attrIndex('src')
     if (srcIndex >= 0 && baseDir) {
       const src = token.attrs![srcIndex][1]
-      if (!/^https?:\/\//.test(src) && !src.startsWith('/') && !src.startsWith('data:')) {
-        token.attrs![srcIndex][1] = `asset://${baseDir}/${src}`
+      if (!/^https?:\/\//.test(src) && !src.startsWith('data:') && !src.startsWith('asset:')) {
+        const resolvedPath = resolveRelativePath(baseDir, src)
+        token.attrs![srcIndex][1] = resolvedPath
       }
     }
-    // 添加图片样式类
     token.attrJoin('class', 'mk-image')
     return defaultImageRender(tokens, idx, options, env, self)
   }
 
-  // 规则2: 外部链接安全处理
+  // 规则2: 链接安全处理 + 内部链接识别
   const defaultLinkOpen = md.renderer.rules.link_open ||
     ((tokens: any, idx: any, options: any, _env: any, self: any) => self.renderToken(tokens, idx, options))
 
@@ -181,9 +200,18 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
     if (hrefIndex >= 0) {
       const href = token.attrs![hrefIndex][1]
       if (/^https?:\/\//.test(href)) {
+        // 外部链接 — 新窗口打开
         token.attrSet('target', '_blank')
         token.attrSet('rel', 'noopener noreferrer')
         token.attrJoin('class', 'external-link')
+      } else if (/\.(md|markdown)$/i.test(href) || href.endsWith('.md#') || /\.(md|markdown)#/.test(href)) {
+        // 内部 Markdown 文件链接
+        const resolvedPath = resolveRelativePath(baseDir, href.replace(/#.*$/, ''))
+        const hash = href.includes('#') ? href.substring(href.indexOf('#')) : ''
+        token.attrSet('href', 'javascript:void(0)')
+        token.attrSet('data-file-path', resolvedPath)
+        if (hash) token.attrSet('data-hash', hash)
+        token.attrJoin('class', 'internal-link')
       }
     }
     return defaultLinkOpen(tokens, idx, options, env, self)
@@ -204,8 +232,11 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
     // 常规代码块
     const langDisplay = langName || 'text'
     const escapedCode = md.utils.escapeHtml(token.content)
+    const isAscii = isAsciiArt(token.content)
+    const asciiClass = isAscii ? ' ascii-art' : ''
+    const asciiAttr = isAscii ? ' data-is-ascii="true"' : ''
 
-    return `<div class="code-block-wrapper"${sourceLine}>` +
+    return `<div class="code-block-wrapper${asciiClass}"${asciiAttr}${sourceLine}>` +
       `<div class="code-header">` +
       `<span class="code-lang">${langDisplay}</span>` +
       `<button class="code-copy-btn" data-code="${md.utils.escapeHtml(token.content)}">复制</button>` +

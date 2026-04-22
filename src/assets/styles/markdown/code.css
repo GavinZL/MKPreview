@@ -323,7 +323,10 @@ html[data-theme="dark"] .mk-body .code-body code .hljs-strong {
   line-height: 1.2;
   letter-spacing: 0;
   font-variant-ligatures: none;
-  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  /* 优先使用中英文等宽字体（CJK 字符宽度 = 2×西文），确保 ASCII 框图对齐 */
+  font-family: 'Sarasa Mono SC', 'Sarasa Fixed SC', 'Noto Sans Mono CJK SC',
+               'WenQuanYi Zen Hei Mono', 'Source Han Mono SC',
+               'SF Mono', 'JetBrains Mono', 'Fira Code', 'Menlo', 'Monaco', 'Courier New', monospace;
 }
 
 /* -------------------- 行内代码（在 base.css 中定义，此处补充） -------------------- */

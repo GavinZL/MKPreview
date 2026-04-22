@@ -15,6 +15,7 @@ export interface FileMeta {
   modified: number
   /** Unix timestamp (seconds since epoch) */
   created: number
+  isDir: boolean
 }
 
 /** 文件系统变更类型 */

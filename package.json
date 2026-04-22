@@ -10,6 +10,9 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
+    "tauri:build:universal": "tauri build --target universal-apple-darwin",
+    "tauri:build:x86": "tauri build --target x86_64-apple-darwin",
+    "tauri:build:arm": "tauri build --target aarch64-apple-darwin",
     "lint": "eslint . --ext .vue,.ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,vue,css}\""
   },
@@ -23,6 +26,7 @@
     "@codemirror/view": "^6.28.0",
     "@lezer/highlight": "^1.2.0",
     "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/cli-darwin-x64": "^2.10.1",
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2.0.0",

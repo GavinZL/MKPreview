@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import SourceEditor from '@/components/editor/SourceEditor.vue'
 import MarkdownPreview from '@/components/preview/MarkdownPreview.vue'
 import { useScrollSync } from '@/composables/useScrollSync'
@@ -131,7 +131,8 @@ function onPreviewRendered() {
 }
 
 // ========== 生命周期 ==========
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   // 获取 CodeMirror 的内部滚动容器
   if (sourcePane.value) {
     sourceScrollEl.value = (sourcePane.value.querySelector('.cm-scroller') as HTMLElement) ?? undefined

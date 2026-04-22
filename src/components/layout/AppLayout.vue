@@ -24,10 +24,6 @@
       />
     </aside>
 
-    <div class="app-tabbar">
-      <TabBar />
-    </div>
-
     <header class="app-toolbar">
       <Toolbar />
     </header>
@@ -47,7 +43,9 @@ import { computed, ref } from 'vue'
 import { useUiStore } from '@/stores/uiStore'
 import { useTabStore } from '@/stores/tabStore'
 import { useFileTreeStore } from '@/stores/fileTreeStore'
-import TabBar from '@/components/tabs/TabBar.vue'
+import { useNavigationStore } from '@/stores/navigationStore'
+import { useSettingsStore } from '@/stores/settingsStore'
+import { useNavigationActions } from '@/composables/useNavigationActions'
 import Toolbar from './Toolbar.vue'
 import StatusBar from './StatusBar.vue'
 import FileTree from '@/components/file-tree/FileTree.vue'
@@ -57,9 +55,14 @@ import SearchPanel from '@/components/search/SearchPanel.vue'
 const uiStore = useUiStore()
 const tabStore = useTabStore()
 const fileTreeStore = useFileTreeStore()
+const navigationStore = useNavigationStore()
+const settingsStore = useSettingsStore()
+const { saveCurrentScrollTop } = useNavigationActions()
 
 function onSearchSelect(result: any) {
   // 搜索结果选中后打开文件
+  saveCurrentScrollTop()
+  navigationStore.pushEntry(result.path, result.name, undefined, settingsStore.displayMode)
   tabStore.openFile(result.path, result.name)
   uiStore.searchPanelVisible = false
 }
@@ -101,10 +104,9 @@ function resetWidth() {
 <style scoped>
 .app-layout {
   display: grid;
-  grid-template-rows: var(--tabbar-height, 36px) var(--toolbar-height) 1fr var(--statusbar-height);
+  grid-template-rows: var(--toolbar-height) 1fr var(--statusbar-height);
   grid-template-columns: var(--sidebar-width) 1fr;
   grid-template-areas:
-    "sidebar tabbar"
     "sidebar toolbar"
     "sidebar content"
     "sidebar status";
@@ -144,13 +146,6 @@ function resetWidth() {
 .sidebar-resizer:hover,
 .sidebar-resizer:active {
   background: var(--accent);
-}
-
-.app-tabbar {
-  grid-area: tabbar;
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  z-index: 10;
 }
 
 .app-toolbar {

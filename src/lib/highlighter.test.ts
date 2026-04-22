@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { highlightCode, highlightAllIn, hljs } from './highlighter'
+import { highlightCode, highlightAllInContainer, hljs } from './highlighter'
 
 describe('highlightCode', () => {
   it('已注册语言（js）正确高亮', () => {
@@ -35,7 +35,7 @@ describe('hljs', () => {
   })
 })
 
-describe('highlightAllIn', () => {
+describe('highlightAllInContainer', () => {
   it('处理容器中的代码块', () => {
     const container = document.createElement('div')
     const pre = document.createElement('pre')
@@ -45,13 +45,37 @@ describe('highlightAllIn', () => {
     pre.appendChild(code)
     container.appendChild(pre)
 
-    // mock highlightElement
-    const mockHighlightElement = vi.fn()
-    hljs.highlightElement = mockHighlightElement
+    // mock highlight to return wrapped HTML
+    const originalHighlight = hljs.highlight
+    hljs.highlight = vi.fn().mockReturnValue({ value: '<span class="hljs-keyword">const</span> x = 1;' })
 
-    highlightAllIn(container)
+    highlightAllInContainer(container)
 
-    expect(mockHighlightElement).toHaveBeenCalledTimes(1)
-    expect(mockHighlightElement).toHaveBeenCalledWith(code)
+    expect(hljs.highlight).toHaveBeenCalledTimes(1)
+    expect(code.innerHTML).toContain('<span class="hljs-keyword">')
+    expect(code.dataset.highlighted).toBe('true')
+
+    // restore
+    hljs.highlight = originalHighlight
+  })
+
+  it('跳过已高亮的代码块', () => {
+    const container = document.createElement('div')
+    const pre = document.createElement('pre')
+    const code = document.createElement('code')
+    code.className = 'language-js'
+    code.textContent = 'const x = 1;'
+    code.dataset.highlighted = 'true'
+    pre.appendChild(code)
+    container.appendChild(pre)
+
+    const originalHighlight = hljs.highlight
+    hljs.highlight = vi.fn().mockReturnValue({ value: '<span>const</span>' })
+
+    highlightAllInContainer(container)
+
+    expect(hljs.highlight).not.toHaveBeenCalled()
+
+    hljs.highlight = originalHighlight
   })
 })

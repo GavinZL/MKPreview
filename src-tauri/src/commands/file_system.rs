@@ -58,6 +58,7 @@ pub async fn get_file_meta(path: String) -> Result<FileMeta, AppError> {
         size: metadata.len(),
         modified,
         created,
+        is_dir: metadata.is_dir(),
     })
 }
 

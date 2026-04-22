@@ -183,11 +183,13 @@ describe('类型兼容性', () => {
       size: 1024,
       modified: 1700000000,
       created: 1700000000,
+      isDir: false,
     }
     expect(meta.path).toBeDefined()
     expect(meta.size).toBeDefined()
     expect(meta.modified).toBeDefined()
     expect(meta.created).toBeDefined()
+    expect(meta.isDir).toBeDefined()
   })
 
   it('Settings 类型字段与 Rust 模型通过 camelCase 映射一致', () => {

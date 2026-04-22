@@ -12,6 +12,8 @@
         <span class="status-sep">|</span>
         <span class="status-item">{{ lineCount }} 行</span>
         <span class="status-sep">|</span>
+        <span class="status-item">{{ wordCount }} 字</span>
+        <span class="status-sep">|</span>
         <span class="status-item">{{ formattedFileSize }}</span>
       </template>
       <template v-else>
@@ -44,6 +46,16 @@ const isModified = computed(() => tabStore.activeTab?.isModified ?? false)
 const lineCount = computed(() => {
   if (!tabStore.activeContent) return 0
   return tabStore.activeContent.split('\n').length
+})
+
+const wordCount = computed(() => {
+  if (!tabStore.activeContent) return 0
+  const text = tabStore.activeContent
+  // 统计中文字符
+  const chineseChars = (text.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g) || []).length
+  // 统计英文单词（连续的字母数字序列）
+  const englishWords = (text.match(/[a-zA-Z0-9]+/g) || []).length
+  return chineseChars + englishWords
 })
 
 const formattedFileSize = computed(() => {

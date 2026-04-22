@@ -2,7 +2,7 @@ use crate::models::error::AppError;
 use crate::models::file_tree::FileTreeNode;
 use std::path::Path;
 
-/// 扫描目录，返回仅包含 .md 文件的文件树
+/// 扫描目录，返回文件树，排除隐藏文件和目录
 pub fn scan_directory(root_path: &Path) -> Result<Vec<FileTreeNode>, AppError> {
     // 1. 路径遍历防护：拒绝含 .. 的路径（优先于存在性检查）
     if root_path.to_string_lossy().contains("..") {
@@ -60,7 +60,7 @@ fn build_tree(dir: &Path) -> Result<Vec<FileTreeNode>, AppError> {
                     file_count: Some(file_count),
                 });
             }
-        } else if metadata.is_file() && name.ends_with(".md") {
+        } else if metadata.is_file() {
             entries.push(FileTreeNode {
                 name,
                 path: path.to_string_lossy().to_string(),
@@ -137,13 +137,16 @@ mod tests {
     }
 
     #[test]
-    fn test_scan_filters_non_md() {
+    fn test_scan_returns_all_visible_files() {
         let temp = TempDir::new().unwrap();
         fs::write(temp.path().join("a.md"), "# A").unwrap();
         fs::write(temp.path().join("b.txt"), "B").unwrap();
+        fs::write(temp.path().join(".hidden"), "hidden").unwrap();
         let result = scan_directory(temp.path()).unwrap();
-        assert_eq!(result.len(), 1, "应只返回 .md 文件");
-        assert_eq!(result[0].name, "a.md");
+        assert_eq!(result.len(), 2, "应返回所有非隐藏文件");
+        let names: Vec<&str> = result.iter().map(|n| n.name.as_str()).collect();
+        assert!(names.contains(&"a.md"));
+        assert!(names.contains(&"b.txt"));
     }
 
     #[test]
@@ -185,15 +188,17 @@ mod tests {
     }
 
     #[test]
-    fn test_scan_empty_dir_pruned() {
+    fn test_scan_empty_dir_with_non_md_not_pruned() {
         let temp = TempDir::new().unwrap();
         fs::write(temp.path().join("readme.md"), "# R").unwrap();
-        let empty = temp.path().join("empty_sub");
-        fs::create_dir(&empty).unwrap();
-        fs::write(empty.join("note.txt"), "txt").unwrap();
+        let sub = temp.path().join("sub");
+        fs::create_dir(&sub).unwrap();
+        fs::write(sub.join("note.txt"), "txt").unwrap();
         let result = scan_directory(temp.path()).unwrap();
-        assert_eq!(result.len(), 1, "不含 .md 的子目录应被剪枝");
-        assert_eq!(result[0].name, "readme.md");
+        assert_eq!(result.len(), 2, "包含非 .md 文件的子目录不应被剪枝");
+        let names: Vec<&str> = result.iter().map(|n| n.name.as_str()).collect();
+        assert!(names.contains(&"readme.md"));
+        assert!(names.contains(&"sub"));
     }
 
     #[test]

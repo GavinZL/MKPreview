@@ -3,12 +3,14 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useTabStore } from '@/stores/tabStore'
 import { useFileSave } from '@/composables/useFileSave'
+import { useNavigationActions } from '@/composables/useNavigationActions'
 
 export function useKeyboard() {
   const settingsStore = useSettingsStore()
   const uiStore = useUiStore()
   const tabStore = useTabStore()
   const { saveCurrentFile } = useFileSave()
+  const { navigateBack, navigateForward } = useNavigationActions()
 
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
   const cmdKey = isMac ? 'metaKey' : 'ctrlKey'
@@ -86,6 +88,20 @@ export function useKeyboard() {
     if (e.key === ',') {
       e.preventDefault()
       uiStore.settingsPanelVisible = true
+      return
+    }
+
+    // Cmd+[ 或 Ctrl+[ : 回退
+    if (e.key === '[') {
+      e.preventDefault()
+      navigateBack()
+      return
+    }
+
+    // Cmd+] 或 Ctrl+] : 前进
+    if (e.key === ']') {
+      e.preventDefault()
+      navigateForward()
       return
     }
   }
