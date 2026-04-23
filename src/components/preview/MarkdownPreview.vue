@@ -21,6 +21,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { createMarkdownIt } from '@/lib/markdownIt'
+import { findAnchorTarget } from '@/lib/utils'
 import { highlightAllInContainer } from '@/lib/highlighter'
 import { renderMermaidInContainer } from '@/lib/mermaidConfig'
 import { useTabStore } from '@/stores/tabStore'
@@ -182,6 +183,7 @@ function bindInternalLinkHandlers(container: HTMLElement) {
       e.preventDefault()
       e.stopPropagation()
       const filePath = link.dataset.filePath
+      const hash = link.dataset.hash
       if (filePath) {
         // 跳转前保存当前文件到历史（如果有当前文件）
         if (props.filePath) {
@@ -196,6 +198,22 @@ function bindInternalLinkHandlers(container: HTMLElement) {
         const fileName = filePath.split('/').pop() || filePath
         navigationStore.pushEntry(filePath, fileName, undefined, settingsStore.displayMode)
         tabStore.openFile(filePath, fileName)
+
+        // 如果带有锚点，在目标文件渲染完成后跳转到对应锚点
+        if (hash) {
+          const targetId = hash.substring(1)
+          // 等待文件打开并渲染完成后再滚动到锚点
+          setTimeout(() => {
+            const previewContainer = document.querySelector('.markdown-preview') as HTMLElement | null
+            if (!previewContainer) return
+            const targetElement = findAnchorTarget(previewContainer, targetId)
+            if (targetElement) {
+              targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            } else {
+              console.warn(`[内部链接] 找不到跨文件锚点目标: "${targetId}"`)
+            }
+          }, 300)
+        }
       }
     })
   })
@@ -239,9 +257,8 @@ function bindAnchorLinkHandlers(container: HTMLElement) {
       // 尝试 URL 解码（处理编码后的中文锚点，如 #%E7%9F%A9... → 矩阵...）
       try { targetId = decodeURIComponent(targetId) } catch { /* 保留原始值 */ }
 
-      // 优先使用 getElementById（不需要 CSS 转义，对中文 ID 友好）
-      const targetElement = document.getElementById(targetId)
-        || container.querySelector(`[id="${CSS.escape(targetId)}"]`) as HTMLElement | null
+      // 使用增强的锚点查找（7 层回退匹配策略）
+      const targetElement = findAnchorTarget(container, targetId)
 
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -254,6 +271,8 @@ function bindAnchorLinkHandlers(container: HTMLElement) {
             navigationStore.pushEntry(props.filePath, fileName, newScrollTop, settingsStore.displayMode)
           }
         }, 500) // 等待平滑滚动完成
+      } else {
+        console.warn(`[TOC] 找不到锚点目标: "${targetId}"，请检查目录链接与标题是否匹配`)
       }
     })
   })
@@ -288,7 +307,7 @@ function processImagePaths(container: HTMLElement) {
 }
 
 watch(
-  () => props.content,
+  [() => props.content, () => props.filePath],
   () => {
     renderContent()
   },

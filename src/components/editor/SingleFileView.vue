@@ -26,6 +26,7 @@
       <!-- 预览模式 -->
       <MarkdownPreview
         v-if="settingsStore.displayMode === 'preview'"
+        :key="tabStore.filePath"
         :content="tabStore.activeContent"
         :file-path="tabStore.filePath"
       />
@@ -42,6 +43,7 @@
       <!-- 分屏模式 -->
       <SplitView
         v-else-if="settingsStore.displayMode === 'split'"
+        :key="tabStore.filePath"
         :content="tabStore.activeContent"
         :file-path="tabStore.filePath"
         @change="onContentChange"

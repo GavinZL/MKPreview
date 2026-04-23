@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import MarkdownIt from 'markdown-it'
-import { createMarkdownIt, renderMarkdown, resolveRelativePath } from './markdownIt'
+import { createMarkdownIt, renderMarkdown, resolveRelativePath, slugifyHeading } from './markdownIt'
 
 describe('createMarkdownIt', () => {
   it('返回 MarkdownIt 实例', () => {
@@ -177,6 +177,32 @@ describe('renderMarkdown', () => {
   })
 })
 
+describe('slugifyHeading', () => {
+  it('英文标题转换为小写连字符 slug', () => {
+    expect(slugifyHeading('Hello World')).toBe('hello-world')
+  })
+
+  it('中文标题保留原样', () => {
+    expect(slugifyHeading('中文标题')).toBe('中文标题')
+  })
+
+  it('混合中英文标题正确处理', () => {
+    expect(slugifyHeading('Hello 世界 World')).toBe('hello-世界-world')
+  })
+
+  it('去除首尾连字符', () => {
+    expect(slugifyHeading('  Hello World  ')).toBe('hello-world')
+  })
+
+  it('多个特殊字符替换为单个连字符', () => {
+    expect(slugifyHeading('Hello!!!World')).toBe('hello-world')
+  })
+
+  it('空字符串返回空', () => {
+    expect(slugifyHeading('')).toBe('')
+  })
+})
+
 describe('resolveRelativePath', () => {
   it('解析 ./ 前缀路径', () => {
     expect(resolveRelativePath('/docs/project', './sub/file.md')).toBe('/docs/project/sub/file.md')
@@ -224,6 +250,21 @@ describe('内部链接处理', () => {
     expect(html).toContain('data-hash="#section"')
   })
 
+  it('中文路径的 .md 链接正确解码并解析', () => {
+    const md = createMarkdownIt({ baseDir: '/docs/知识库' })
+    const html = md.render('[文档](./深度解析.md)')
+    expect(html).toContain('class="internal-link"')
+    expect(html).toContain('data-file-path="/docs/知识库/深度解析.md"')
+    // 确保没有 URL 编码残留
+    expect(html).not.toContain('%E6%B7%B1')
+  })
+
+  it('含中文子目录的 .md 链接正确解码', () => {
+    const md = createMarkdownIt({ baseDir: '/docs/知识库' })
+    const html = md.render('[文档](./01_架构设计/详细说明.md)')
+    expect(html).toContain('data-file-path="/docs/知识库/01_架构设计/详细说明.md"')
+  })
+
   it('.markdown 扩展名也被识别为内部链接', () => {
     const md = createMarkdownIt({ baseDir: '/docs' })
     const html = md.render('[文档](./doc.markdown)')
@@ -256,5 +297,12 @@ describe('图片路径解析', () => {
     const md = createMarkdownIt({ baseDir: '/docs/sub' })
     const html = md.render('![图片](../images/test.png)')
     expect(html).toContain('/docs/images/test.png')
+  })
+
+  it('中文图片路径正确解码并解析', () => {
+    const md = createMarkdownIt({ baseDir: '/docs/知识库' })
+    const html = md.render('![图](./示意图.png)')
+    expect(html).toContain('/docs/知识库/示意图.png')
+    expect(html).not.toContain('%E7%A4%BA')
   })
 })

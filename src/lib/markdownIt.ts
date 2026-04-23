@@ -12,6 +12,18 @@ export interface MkMarkdownItOptions {
   enableKaTeX?: boolean
 }
 
+/**
+ * 将标题文本转换为锚点 ID（与 markdown-it-anchor 的 slugify 保持一致）
+ * @param s 标题文本
+ * @returns 锚点 ID 字符串
+ */
+export function slugifyHeading(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export function resolveRelativePath(base: string, relativePath: string): string {
   if (!base || !relativePath) return relativePath
   if (relativePath.startsWith('/')) return relativePath
@@ -50,10 +62,7 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
   if (enableAnchor) {
     md.use(anchor, {
       permalink: false,
-      slugify: (s: string) =>
-        s.toLowerCase()
-          .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-          .replace(/^-+|-+$/g, ''),
+      slugify: slugifyHeading,
       uniqueSlugStartIndex: 2,
     })
   }
@@ -180,7 +189,9 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
     const token = tokens[idx]
     const srcIndex = token.attrIndex('src')
     if (srcIndex >= 0 && baseDir) {
-      const src = token.attrs![srcIndex][1]
+      let src = token.attrs![srcIndex][1]
+      // 解码 URL 编码的中文路径（markdown-it 会对非 ASCII 字符进行 percent-encoding）
+      try { src = decodeURIComponent(src) } catch { /* 保留原始值 */ }
       if (!/^https?:\/\//.test(src) && !src.startsWith('data:') && !src.startsWith('asset:')) {
         const resolvedPath = resolveRelativePath(baseDir, src)
         token.attrs![srcIndex][1] = resolvedPath
@@ -198,7 +209,9 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
     const token = tokens[idx]
     const hrefIndex = token.attrIndex('href')
     if (hrefIndex >= 0) {
-      const href = token.attrs![hrefIndex][1]
+      let href = token.attrs![hrefIndex][1]
+      // 解码 URL 编码的中文路径（markdown-it 会对非 ASCII 字符进行 percent-encoding）
+      try { href = decodeURIComponent(href) } catch { /* 保留原始值 */ }
       if (/^https?:\/\//.test(href)) {
         // 外部链接 — 新窗口打开
         token.attrSet('target', '_blank')
