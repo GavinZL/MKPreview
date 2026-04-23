@@ -463,16 +463,19 @@
 .mk-body .mermaid {
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 1.5em;
   margin: 1.2em 0;
   background: var(--bg-secondary);
   border-radius: 8px;
   border: 1px solid var(--border);
   overflow-x: auto;
+  min-height: 120px;
 }
 
 .mk-body .mermaid svg {
   max-width: 100%;
+  max-height: 600px;
   height: auto;
 }
 
@@ -484,6 +487,9 @@
   border-radius: 8px;
   font-family: var(--font-mono);
   font-size: 13px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .mk-body .mermaid-error .error-title {
@@ -498,6 +504,10 @@
   padding: 0;
   margin: 0;
   color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /* -------------------- 8.11 KaTeX 公式 -------------------- */

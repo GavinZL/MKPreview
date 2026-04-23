@@ -12,7 +12,7 @@
 
     <!-- 空标签占位 -->
     <div v-if="tabStore.tabCount === 0" class="tab-bar-placeholder">
-      <span>未打开文件</span>
+      <span>{{ t('tabs.noFile') }}</span>
     </div>
 
     <!-- 右键上下文菜单 -->
@@ -28,6 +28,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTabStore } from '@/stores/tabStore'
 import TabItem from './TabItem.vue'
 import ContextMenu from '@/components/common/ContextMenu.vue'
@@ -38,6 +39,7 @@ interface MenuItem {
   disabled?: boolean
 }
 
+const { t } = useI18n()
 const tabStore = useTabStore()
 const tabBarRef = ref<HTMLElement>()
 
@@ -64,21 +66,21 @@ const contextMenuItems = computed<MenuItem[]>(() => {
 
   return [
     {
-      label: '关闭',
+      label: t('tabs.close'),
       action: () => tabStore.closeTab(tabId),
     },
     {
-      label: '关闭其他',
+      label: t('tabs.closeOthers'),
       action: () => tabStore.closeOthers(tabId),
       disabled: isOnlyTab,
     },
     {
-      label: '关闭右侧',
+      label: t('tabs.closeRight'),
       action: () => tabStore.closeRight(tabId),
       disabled: isRightMost,
     },
     {
-      label: '关闭全部',
+      label: t('tabs.closeAll'),
       action: () => tabStore.closeAll(),
       disabled: tabStore.tabCount === 0,
     },

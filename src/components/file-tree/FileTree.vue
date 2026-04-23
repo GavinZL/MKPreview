@@ -19,21 +19,22 @@
         :search-keyword="fileTreeStore.searchKeyword"
       />
       <div v-if="!fileTreeStore.hasRoot" class="tree-empty">
-        <p>点击工具栏打开目录</p>
+        <p>{{ t('tree.openDirectoryHint') }}</p>
       </div>
       <div v-else-if="sortedDisplayNodes.length === 0" class="tree-empty">
-        <p>无匹配结果</p>
+        <p>{{ t('tree.noResults') }}</p>
       </div>
     </div>
     <!-- 拖拽覆盖层 -->
     <div v-if="isDragOver" class="drop-overlay">
-      <div class="drop-hint">释放以打开</div>
+      <div class="drop-hint">{{ t('tree.dropHint') }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useFileTreeStore } from '@/stores/fileTreeStore'
 import { useTabStore } from '@/stores/tabStore'
 import { useNavigationStore } from '@/stores/navigationStore'
@@ -45,6 +46,7 @@ import TreeSearch from './TreeSearch.vue'
 import TreeNode from './TreeNode.vue'
 import { naturalSort } from '@/lib/naturalSort'
 
+const { t } = useI18n()
 const fileTreeStore = useFileTreeStore()
 const tabStore = useTabStore()
 const navigationStore = useNavigationStore()

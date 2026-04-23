@@ -26,6 +26,7 @@ import { useKeyboard } from '@/composables/useKeyboard'
 import { useAutoSave } from '@/composables/useAutoSave'
 import { useFileConflict } from '@/composables/useFileConflict'
 import { useMenuEvents } from '@/composables/useMenuEvents'
+import { setLocale } from '@/i18n'
 
 const settingsStore = useSettingsStore()
 const uiStore = useUiStore()
@@ -36,9 +37,10 @@ useAutoSave()
 useMenuEvents()
 const conflict = useFileConflict()
 
-// 加载设置并应用主题
+// 加载设置并应用主题和语言
 onMounted(async () => {
   await settingsStore.loadSettings()
   document.documentElement.setAttribute('data-theme', settingsStore.resolvedTheme)
+  setLocale(settingsStore.locale)
 })
 </script>

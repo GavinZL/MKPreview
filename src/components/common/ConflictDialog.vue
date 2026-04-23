@@ -9,20 +9,20 @@
     <div class="conflict-dialog">
       <div class="conflict-header">
         <span class="conflict-icon">⚠️</span>
-        <h3>文件冲突</h3>
+        <h3>{{ t('conflict.title') }}</h3>
       </div>
       <p class="conflict-message">
-        文件 <strong>{{ fileName }}</strong> 已在外部被修改，且您有未保存的更改。
+        <span v-html="t('conflict.message', { fileName: `<strong>${fileName}</strong>` })" />
       </p>
       <div class="conflict-actions">
         <button class="btn btn-secondary" @click="$emit('keepLocal')">
-          保留本地修改
+          {{ t('conflict.keepLocal') }}
         </button>
         <button class="btn btn-secondary" @click="$emit('loadExternal')">
-          加载外部版本
+          {{ t('conflict.loadExternal') }}
         </button>
         <button class="btn btn-primary" @click="$emit('viewDiff')">
-          查看差异
+          {{ t('conflict.viewDiff') }}
         </button>
       </div>
     </div>
@@ -30,7 +30,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Modal from '@/components/common/Modal.vue'
+
+const { t } = useI18n()
 
 interface Props {
   visible: boolean

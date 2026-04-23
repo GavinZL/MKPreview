@@ -1,3 +1,6 @@
+/** 应用语言 */
+export type AppLocale = 'zh-CN' | 'en-US'
+
 /** 主题偏好 */
 export type ThemePreference = 'system' | 'light' | 'dark'
 
@@ -84,4 +87,6 @@ export interface Settings {
   previewTheme?: BuiltInPreviewThemeId
   previewTemplate?: PreviewTemplateId
   customThemes?: SavedCustomTheme[]
+  // i18n
+  locale?: AppLocale
 }

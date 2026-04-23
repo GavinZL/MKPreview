@@ -4,7 +4,7 @@
     <div class="toolbar-left">
       <button
         class="icon-btn"
-        title="切换侧栏"
+        :title="t('toolbar.toggleSidebar')"
         @click="uiStore.toggleSidebar()"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -15,7 +15,7 @@
       <button
         class="icon-btn"
         :disabled="!navigationStore.canGoBack"
-        title="回退"
+        :title="t('toolbar.goBack')"
         @click="handleGoBack"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -25,7 +25,7 @@
       <button
         class="icon-btn"
         :disabled="!navigationStore.canGoForward"
-        title="前进"
+        :title="t('toolbar.goForward')"
         @click="handleGoForward"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -34,7 +34,7 @@
       </button>
       <button
         class="icon-btn"
-        title="打开目录 (⌘O)"
+        :title="t('toolbar.openDirectory')"
         @click="openDirectoryDialog"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -54,7 +54,7 @@
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
-        <span>Preview</span>
+        <span>{{ t('toolbar.modePreview') }}</span>
       </button>
       <button
         v-if="false"
@@ -77,7 +77,7 @@
           <rect x="3" y="3" width="8" height="18" rx="1" />
           <rect x="13" y="3" width="8" height="18" rx="1" />
         </svg>
-        <span>Split</span>
+        <span>{{ t('toolbar.modeSplit') }}</span>
       </button>
     </div>
 
@@ -87,10 +87,10 @@
       <select
         v-model="previewTheme"
         class="toolbar-select"
-        title="切换预览主题"
+        :title="t('toolbar.previewTheme')"
       >
-        <option v-for="t in builtInPreviewThemes" :key="t.id" :value="t.id">
-          {{ t.name }}
+        <option v-for="th in builtInPreviewThemes" :key="th.id" :value="th.id">
+          {{ t('theme.' + th.nameKey) }}
         </option>
       </select>
 
@@ -98,16 +98,16 @@
       <select
         v-model="previewTemplate"
         class="toolbar-select"
-        title="切换预览风格"
+        :title="t('toolbar.previewTemplate')"
       >
-        <option v-for="t in previewTemplates" :key="t.id" :value="t.id">
-          {{ t.name }}
+        <option v-for="tp in previewTemplates" :key="tp.id" :value="tp.id">
+          {{ t('template.' + tp.nameKey) }}
         </option>
       </select>
 
       <button
         class="icon-btn"
-        title="切换主题"
+        :title="t('toolbar.toggleTheme')"
         @click="toggleTheme"
       >
         <svg v-if="settingsStore.isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -127,7 +127,7 @@
       </button>
       <button
         class="icon-btn"
-        title="设置"
+        :title="t('toolbar.settings')"
         @click="uiStore.settingsPanelVisible = true"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -141,6 +141,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/uiStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useNavigationStore } from '@/stores/navigationStore'
@@ -150,6 +151,7 @@ import { builtInPreviewThemes } from '@/lib/previewThemes'
 import { previewTemplates } from '@/lib/previewTemplates'
 import type { BuiltInPreviewThemeId, PreviewTemplateId } from '@/types'
 
+const { t } = useI18n()
 const uiStore = useUiStore()
 const settingsStore = useSettingsStore()
 const navigationStore = useNavigationStore()

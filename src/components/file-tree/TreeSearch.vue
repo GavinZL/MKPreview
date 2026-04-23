@@ -10,7 +10,7 @@
         v-model="searchInput"
         type="text"
         class="search-input"
-        placeholder="搜索文件..."
+        :placeholder="t('tree.searchPlaceholder')"
         @keydown.esc="clearSearch"
       />
       <button
@@ -25,17 +25,19 @@
       </button>
     </div>
     <div v-if="searchInput" class="search-stats">
-      {{ filteredCount }} 个结果
+      {{ t('tree.searchResults', { count: filteredCount }) }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useFileTreeStore } from '@/stores/fileTreeStore'
 import { useDebounce } from '@/composables/useDebounce'
 import type { FileTreeNode } from '@/types'
 
+const { t } = useI18n()
 const fileTreeStore = useFileTreeStore()
 const inputRef = ref<HTMLInputElement>()
 const searchInput = ref('')

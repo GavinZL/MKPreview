@@ -2,15 +2,23 @@ import { invoke as tauriInvoke } from '@tauri-apps/api/core'
 import type { AppException, ErrorLevel } from '@/types'
 import { ErrorCodes } from '@/types'
 
+/** 可传入 Vue I18n 的 t 函数，用于将错误码映射为本地化消息 */
+export type TranslateFn = (key: string, values?: Record<string, unknown>) => string
+
 /**
  * 解析 Tauri IPC 错误字符串为结构化 AppException
+ * 保留 Rust 传来的原始 message 作为后备
  */
 export function parseError(err: unknown): AppException {
   if (typeof err === 'string') {
     try {
       const parsed = JSON.parse(err)
       if (parsed.code && parsed.message) {
-        return parsed as AppException
+        return {
+          code: parsed.code,
+          message: parsed.message,
+          details: parsed.details,
+        } as AppException
       }
     } catch {
       // 非 JSON 字符串，降级处理
@@ -21,6 +29,20 @@ export function parseError(err: unknown): AppException {
     return { code: ErrorCodes.UNKNOWN, message: err.message }
   }
   return { code: ErrorCodes.UNKNOWN, message: String(err) }
+}
+
+/**
+ * 根据错误码获取本地化错误消息
+ * @param err AppException
+ * @param t vue-i18n 的 t 函数
+ * @returns 本地化后的错误消息
+ */
+export function getLocalizedErrorMessage(err: AppException, t: TranslateFn): string {
+  const key = `error.${err.code}`
+  const fallback = err.message || t('error.UNKNOWN')
+  // vue-i18n 在 key 不存在时会返回 key 本身，此时用 fallback
+  const localized = t(key, err.details || {})
+  return localized === key ? fallback : localized
 }
 
 /**

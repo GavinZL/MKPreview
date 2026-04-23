@@ -3,7 +3,7 @@
     <!-- 加载状态 -->
     <div v-if="isRendering" class="preview-loading">
       <div class="loading-spinner"></div>
-      <span>正在渲染...</span>
+      <span>{{ t('preview.rendering') }}</span>
     </div>
 
     <!-- 渲染容器 -->
@@ -20,10 +20,16 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { createMarkdownIt } from '@/lib/markdownIt'
 import { findAnchorTarget } from '@/lib/utils'
 import { highlightAllInContainer } from '@/lib/highlighter'
-import { renderMermaidInContainer } from '@/lib/mermaidConfig'
+import {
+  renderMermaidInContainer,
+  cleanupMermaidObservers,
+  reRenderMermaidBlocks,
+  updateMermaidTheme,
+} from '@/lib/mermaidConfig'
 import { useTabStore } from '@/stores/tabStore'
 import { useNavigationStore } from '@/stores/navigationStore'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -49,6 +55,7 @@ const previewRef = ref<HTMLElement>()
 const articleRef = ref<HTMLElement>()
 const renderedHtml = ref('')
 const isRendering = ref(false)
+const { t } = useI18n()
 const tabStore = useTabStore()
 const navigationStore = useNavigationStore()
 const settingsStore = useSettingsStore()
@@ -93,6 +100,12 @@ async function renderContent() {
   // Save scroll position before re-rendering
   const container = previewRef.value
   const scrollTop = container ? container.scrollTop : 0
+
+  // 清理旧 mermaid 图表的 ResizeObserver，避免内存泄漏
+  const oldArticle = articleRef.value
+  if (oldArticle) {
+    cleanupMermaidObservers(oldArticle)
+  }
 
   // Stage 2: Inject HTML
   renderedHtml.value = html
@@ -158,9 +171,9 @@ function handleCopyClick(e: Event) {
 }
 
 function showCopiedFeedback(btn: HTMLButtonElement): void {
-  const originalText = btn.textContent || '复制'
+  const originalText = btn.textContent || t('preview.copy')
   btn.classList.add('copied')
-  btn.textContent = '已复制'
+  btn.textContent = t('preview.copied')
   setTimeout(() => {
     btn.classList.remove('copied')
     btn.textContent = originalText
@@ -314,9 +327,27 @@ watch(
   { immediate: true }
 )
 
+// 监听应用主题变化，自动重渲染 mermaid 图表以适配新主题配色
+watch(
+  () => settingsStore.resolvedTheme,
+  async (newTheme) => {
+    updateMermaidTheme(newTheme as 'light' | 'dark')
+    const article = articleRef.value
+    if (article) {
+      await reRenderMermaidBlocks(article)
+    }
+  }
+)
+
 onUnmounted(() => {
   // Cancel any ongoing render
   renderCancelToken++
+
+  // 清理 mermaid ResizeObserver，防止内存泄漏
+  const article = articleRef.value
+  if (article) {
+    cleanupMermaidObservers(article)
+  }
 })
 </script>
 

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import type { Settings, ThemePreference, DisplayMode, BuiltInPreviewThemeId, PreviewTemplateId, SavedCustomTheme } from '@/types'
+import type { Settings, ThemePreference, DisplayMode, BuiltInPreviewThemeId, PreviewTemplateId, SavedCustomTheme, AppLocale } from '@/types'
 import { tauriCommands } from '@/services/tauriCommands'
 import { invokeWithDefault } from '@/services/errorHandler'
 
@@ -24,6 +24,7 @@ const defaultSettings: Settings = {
   previewTheme: 'default',
   previewTemplate: 'default',
   customThemes: [],
+  locale: 'zh-CN',
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -47,6 +48,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const previewTheme = ref<BuiltInPreviewThemeId>('default')
   const previewTemplate = ref<PreviewTemplateId>('default')
   const customThemes = ref<SavedCustomTheme[]>([])
+  const locale = ref<AppLocale>('zh-CN')
 
   // Getters
   const isDark = computed(() => {
@@ -73,6 +75,10 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setPreviewTemplate(id: PreviewTemplateId) {
     previewTemplate.value = id
+  }
+
+  function setLocale(l: AppLocale) {
+    locale.value = l
   }
 
   function addCustomTheme(theme: SavedCustomTheme) {
@@ -124,6 +130,7 @@ export const useSettingsStore = defineStore('settings', () => {
     previewTheme.value = settings.previewTheme ?? 'default'
     previewTemplate.value = settings.previewTemplate ?? 'default'
     customThemes.value = settings.customThemes ?? []
+    locale.value = settings.locale ?? 'zh-CN'
   }
 
   // 保存到后端（防抖在外部或内部实现）
@@ -160,12 +167,13 @@ export const useSettingsStore = defineStore('settings', () => {
       previewTheme: previewTheme.value,
       previewTemplate: previewTemplate.value,
       customThemes: customThemes.value,
+      locale: locale.value,
     }
   }
 
   // Watch 配置变化自动保存
   watch(
-    [theme, fontSize, codeFontSize, showLineNumbers, autoSave, autoSaveInterval, sidebarWidth, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode, previewTheme, previewTemplate, customThemes],
+    [theme, fontSize, codeFontSize, showLineNumbers, autoSave, autoSaveInterval, sidebarWidth, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode, previewTheme, previewTemplate, customThemes, locale],
     () => { scheduleSave() },
     { deep: true }
   )
@@ -175,11 +183,11 @@ export const useSettingsStore = defineStore('settings', () => {
     theme, displayMode, fontSize, codeFontSize,
     recentDirectories, lastDirectory, showLineNumbers,
     autoSave, autoSaveInterval, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode,
-    sidebarWidth, treeExpandedState, previewTheme, previewTemplate, customThemes,
+    sidebarWidth, treeExpandedState, previewTheme, previewTemplate, customThemes, locale,
     // Getters
     isDark, resolvedTheme,
     // Actions
-    setTheme, setDisplayMode, setPreviewTheme, setPreviewTemplate, addCustomTheme, deleteCustomTheme, setFontSize,
+    setTheme, setDisplayMode, setPreviewTheme, setPreviewTemplate, addCustomTheme, deleteCustomTheme, setFontSize, setLocale,
     addRecentDirectory, loadSettings, scheduleSave,
     toSettingsObject,
   }

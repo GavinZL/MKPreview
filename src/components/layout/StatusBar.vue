@@ -2,26 +2,26 @@
   <footer class="statusbar">
     <div class="status-left">
       <template v-if="tabStore.hasActiveFile">
-        <span v-if="isSaving" class="status-item status-saving">保存中...</span>
-        <span v-else-if="isModified" class="status-item status-modified">已修改</span>
-        <span v-else class="status-item status-saved">已保存</span>
+        <span v-if="isSaving" class="status-item status-saving">{{ t('status.saving') }}</span>
+        <span v-else-if="isModified" class="status-item status-modified">{{ t('status.modified') }}</span>
+        <span v-else class="status-item status-saved">{{ t('status.saved') }}</span>
         <span class="status-sep">|</span>
         <span class="status-item">UTF-8</span>
         <span class="status-sep">|</span>
         <span class="status-item">Markdown</span>
         <span class="status-sep">|</span>
-        <span class="status-item">{{ lineCount }} 行</span>
+        <span class="status-item">{{ t('status.lines', { count: lineCount }) }}</span>
         <span class="status-sep">|</span>
-        <span class="status-item">{{ wordCount }} 字</span>
+        <span class="status-item">{{ t('status.words', { count: wordCount }) }}</span>
         <span class="status-sep">|</span>
         <span class="status-item">{{ formattedFileSize }}</span>
       </template>
       <template v-else>
-        <span class="status-item">就绪</span>
+        <span class="status-item">{{ t('status.ready') }}</span>
       </template>
     </div>
     <div class="status-right">
-      <span v-if="tabStore.hasActiveFile" class="status-item">行 {{ editorStore.cursorLine + 1 }}, 列 {{ editorStore.cursorColumn + 1 }}</span>
+      <span v-if="tabStore.hasActiveFile" class="status-item">{{ t('status.line', { line: editorStore.cursorLine + 1, col: editorStore.cursorColumn + 1 }) }}</span>
       <span class="status-sep">|</span>
       <span class="status-item">{{ modeLabel }}</span>
     </div>
@@ -30,12 +30,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTabStore } from '@/stores/tabStore'
 import { useEditorStore } from '@/stores/editorStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useFileSave } from '@/composables/useFileSave'
 import { formatFileSize } from '@/lib/utils'
 
+const { t } = useI18n()
 const tabStore = useTabStore()
 const editorStore = useEditorStore()
 const settingsStore = useSettingsStore()
@@ -61,16 +63,20 @@ const wordCount = computed(() => {
 const formattedFileSize = computed(() => {
   if (!tabStore.activeContent) return ''
   const bytes = new TextEncoder().encode(tabStore.activeContent).length
-  return formatFileSize(bytes)
+  return formatFileSize(bytes, {
+    b: t('fileSize.b'),
+    kb: t('fileSize.kb'),
+    mb: t('fileSize.mb')
+  })
 })
 
 const modeLabel = computed(() => {
   const map: Record<string, string> = {
-    preview: '预览模式',
-    source: '源码模式',
-    split: '分屏模式'
+    preview: t('status.modePreview'),
+    source: t('status.modeSource'),
+    split: t('status.modeSplit')
   }
-  return map[settingsStore.displayMode] || '预览模式'
+  return map[settingsStore.displayMode] || t('status.modePreview')
 })
 </script>
 

@@ -20,6 +20,7 @@ export type BuiltInPreviewThemeId =
 export interface PreviewTheme {
   id: BuiltInPreviewThemeId
   name: string
+  nameKey: string
   description?: string
   isBuiltIn: boolean
 }

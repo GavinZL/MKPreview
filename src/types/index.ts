@@ -1,6 +1,7 @@
 export type { FileTreeNode, FileMeta, FsChangeType, FsChangeEvent, FsErrorEvent } from './fileTree'
 export type {
   Settings,
+  AppLocale,
   ThemePreference,
   DisplayMode,
   WindowState,

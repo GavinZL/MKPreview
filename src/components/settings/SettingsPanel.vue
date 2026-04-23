@@ -4,85 +4,91 @@
       <div v-if="visible" class="settings-overlay" @click.self="close">
         <div class="settings-panel">
           <div class="settings-header">
-            <h2 class="settings-title">设置</h2>
+            <h2 class="settings-title">{{ t('settings.title') }}</h2>
             <button class="settings-close" @click="close">✕</button>
           </div>
 
           <div class="settings-body">
             <!-- 外观设置 -->
-            <SettingsSection title="外观">
-              <SettingsRow label="主题" description="选择界面主题">
+            <SettingsSection :title="t('settings.sectionAppearance')">
+              <SettingsRow :label="t('settings.theme')" :description="t('settings.themeDesc')">
                 <select v-model="theme" class="select-box">
-                  <option value="system">跟随系统</option>
-                  <option value="light">浅色</option>
-                  <option value="dark">深色</option>
+                  <option value="system">{{ t('settings.themeSystem') }}</option>
+                  <option value="light">{{ t('settings.themeLight') }}</option>
+                  <option value="dark">{{ t('settings.themeDark') }}</option>
                 </select>
               </SettingsRow>
-              <SettingsRow label="正文字体" description="预览区域正文字体">
+              <SettingsRow :label="t('settings.language')" :description="t('settings.languageDesc')">
+                <select v-model="locale" class="select-box">
+                  <option value="zh-CN">中文</option>
+                  <option value="en-US">English</option>
+                </select>
+              </SettingsRow>
+              <SettingsRow :label="t('settings.fontBody')" :description="t('settings.fontBodyDesc')">
                 <select v-model="fontBody" class="select-box">
-                  <option value="">默认</option>
+                  <option value="">{{ t('settings.fontDefault') }}</option>
                   <option value="'LXGW WenKai', 'Noto Serif SC', Georgia, serif">霞鹜文楷</option>
                   <option value="'Noto Serif SC', Georgia, serif">Noto Serif SC</option>
-                  <option value="-apple-system, BlinkMacSystemFont, sans-serif">系统默认</option>
+                  <option value="-apple-system, BlinkMacSystemFont, sans-serif">{{ t('settings.fontSystem') }}</option>
                 </select>
               </SettingsRow>
-              <SettingsRow label="代码字体" description="编辑器和代码块字体">
+              <SettingsRow :label="t('settings.fontCode')" :description="t('settings.fontCodeDesc')">
                 <select v-model="fontCode" class="select-box">
-                  <option value="">默认</option>
+                  <option value="">{{ t('settings.fontDefault') }}</option>
                   <option value="'JetBrains Mono', 'Fira Code', Menlo, monospace">JetBrains Mono</option>
                   <option value="'Fira Code', Menlo, monospace">Fira Code</option>
                   <option value="'SF Mono', Menlo, monospace">SF Mono</option>
                 </select>
               </SettingsRow>
-              <SettingsRow label="字体大小" description="正文基础字号">
+              <SettingsRow :label="t('settings.fontSize')" :description="t('settings.fontSizeDesc')">
                 <input type="number" v-model.number="fontSize" min="12" max="24" class="input-box" />
               </SettingsRow>
             </SettingsSection>
 
             <!-- 编辑器设置 -->
-            <SettingsSection title="编辑器">
-              <SettingsRow label="自动保存" description="编辑后自动保存文件">
+            <SettingsSection :title="t('settings.sectionEditor')">
+              <SettingsRow :label="t('settings.autoSave')" :description="t('settings.autoSaveDesc')">
                 <Toggle v-model="autoSave" />
               </SettingsRow>
-              <SettingsRow v-if="autoSave" label="自动保存间隔" description="秒">
+              <SettingsRow v-if="autoSave" :label="t('settings.autoSaveInterval')" :description="t('settings.autoSaveIntervalDesc')">
                 <input type="number" v-model.number="autoSaveInterval" min="1" max="60" class="input-box" />
               </SettingsRow>
-              <SettingsRow label="显示行号">
+              <SettingsRow :label="t('settings.showLineNumbers')">
                 <Toggle v-model="showLineNumbers" />
               </SettingsRow>
-              <SettingsRow label="代码折叠" description="启用代码折叠功能">
+              <SettingsRow :label="t('settings.enableFolding')" :description="t('settings.enableFoldingDesc')">
                 <Toggle v-model="enableFolding" />
               </SettingsRow>
             </SettingsSection>
 
             <!-- 预览设置 -->
-            <SettingsSection title="预览">
-              <SettingsRow label="预览主题" description="Markdown 预览区配色方案">
+            <SettingsSection :title="t('settings.sectionPreview')">
+              <SettingsRow :label="t('settings.previewTheme')" :description="t('settings.previewThemeDesc')">
                 <select v-model="previewTheme" class="select-box">
                   <option
-                    v-for="t in builtInPreviewThemes"
-                    :key="t.id"
-                    :value="t.id"
+                    v-for="th in builtInPreviewThemes"
+                    :key="th.id"
+                    :value="th.id"
                   >
-                    {{ t.name }}
+                    {{ t('theme.' + th.nameKey) }}
                   </option>
                 </select>
               </SettingsRow>
-              <SettingsRow label="预览风格" description="Markdown 渲染排版风格">
+              <SettingsRow :label="t('settings.previewTemplate')" :description="t('settings.previewTemplateDesc')">
                 <select v-model="previewTemplate" class="select-box">
                   <option
-                    v-for="t in previewTemplates"
-                    :key="t.id"
-                    :value="t.id"
+                    v-for="tp in previewTemplates"
+                    :key="tp.id"
+                    :value="tp.id"
                   >
-                    {{ t.name }}
+                    {{ t('template.' + tp.nameKey) }}
                   </option>
                 </select>
               </SettingsRow>
-              <SettingsRow label="Mermaid 图表" description="启用 Mermaid 图表渲染">
+              <SettingsRow :label="t('settings.enableMermaid')" :description="t('settings.enableMermaidDesc')">
                 <Toggle v-model="enableMermaid" />
               </SettingsRow>
-              <SettingsRow label="KaTeX 公式" description="启用数学公式渲染">
+              <SettingsRow :label="t('settings.enableKaTeX')" :description="t('settings.enableKaTeXDesc')">
                 <Toggle v-model="enableKaTeX" />
               </SettingsRow>
             </SettingsSection>
@@ -95,13 +101,15 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { setLocale } from '@/i18n'
 import SettingsSection from './SettingsSection.vue'
 import SettingsRow from './SettingsRow.vue'
 import Toggle from '@/components/common/Toggle.vue'
 import { builtInPreviewThemes } from '@/lib/previewThemes'
 import { previewTemplates } from '@/lib/previewTemplates'
-import type { ThemePreference, BuiltInPreviewThemeId, PreviewTemplateId } from '@/types'
+import type { ThemePreference, BuiltInPreviewThemeId, PreviewTemplateId, AppLocale } from '@/types'
 
 interface Props {
   visible: boolean
@@ -113,12 +121,21 @@ const emit = defineEmits<{
   close: []
 }>()
 
+const { t } = useI18n()
 const store = useSettingsStore()
 
 // 双向绑定 Store 状态
 const theme = computed({
   get: () => store.theme,
   set: (v) => store.setTheme(v as ThemePreference),
+})
+
+const locale = computed({
+  get: () => store.locale,
+  set: (v) => {
+    store.setLocale(v as AppLocale)
+    setLocale(v as AppLocale)
+  },
 })
 
 const fontBody = computed({

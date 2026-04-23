@@ -37,7 +37,8 @@
     "markdown-it-task-lists": "^2.1.0",
     "mermaid": "^10.9.5",
     "pinia": "^2.1.0",
-    "vue": "^3.4.0"
+    "vue": "^3.4.0",
+    "vue-i18n": "^9.14.5"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0",

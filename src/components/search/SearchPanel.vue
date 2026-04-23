@@ -11,7 +11,7 @@
           v-model="query"
           type="text"
           class="search-input"
-          placeholder="搜索文件名或内容..."
+          :placeholder="t('search.placeholder')"
           @keydown.esc="emit('close')"
         />
         <button v-if="query" class="search-clear" @click="clearQuery">
@@ -33,13 +33,13 @@
       <!-- Loading -->
       <div v-if="loading" class="search-status">
         <span class="loading-spinner"></span>
-        <span>搜索中...</span>
+        <span>{{ t('search.searching') }}</span>
       </div>
 
       <template v-else-if="hasQuery">
         <!-- Filename matches -->
         <div v-if="filenameResults.length" class="result-group">
-          <div class="group-title">文件名匹配</div>
+          <div class="group-title">{{ t('search.filenameMatches') }}</div>
           <div
             v-for="r in filenameResults"
             :key="r.path"
@@ -53,7 +53,7 @@
 
         <!-- Content matches -->
         <div v-if="contentResults.length" class="result-group">
-          <div class="group-title">内容匹配</div>
+          <div class="group-title">{{ t('search.contentMatches') }}</div>
           <div
             v-for="r in contentResults"
             :key="`${r.path}:${r.lineNumber}`"
@@ -70,7 +70,7 @@
 
         <!-- No results -->
         <div v-if="!filenameResults.length && !contentResults.length && !loading" class="search-empty">
-          无结果
+          {{ t('search.noResults') }}
         </div>
       </template>
     </div>
@@ -79,6 +79,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useDebounce } from '@/composables/useDebounce'
 import { tauriCommands } from '@/services/tauriCommands'
 import type { SearchResult } from '@/types'
@@ -93,6 +94,7 @@ const emit = defineEmits<{
   select: [result: SearchResult]
 }>()
 
+const { t } = useI18n()
 const query = ref('')
 const loading = ref(false)
 const results = ref<SearchResult[]>([])

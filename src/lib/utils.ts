@@ -1,9 +1,16 @@
 import { slugifyHeading } from './markdownIt'
 
-export function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+export interface FileSizeLabels {
+  b: string
+  kb: string
+  mb: string
+}
+
+export function formatFileSize(bytes: number, labels?: FileSizeLabels): string {
+  const { b = 'B', kb = 'KB', mb = 'MB' } = labels ?? {}
+  if (bytes < 1024) return `${bytes} ${b}`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} ${kb}`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} ${mb}`
 }
 
 /**

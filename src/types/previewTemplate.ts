@@ -10,5 +10,7 @@ export type PreviewTemplateId =
 export interface PreviewTemplate {
   id: PreviewTemplateId
   name: string
+  nameKey: string
+  descKey: string
   description: string
 }

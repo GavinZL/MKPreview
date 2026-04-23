@@ -3,7 +3,7 @@
     <!-- 加载中 -->
     <div v-if="tabStore.isLoading" class="loading-overlay">
       <div class="loading-spinner"></div>
-      <span>正在加载文件...</span>
+      <span>{{ t('view.loading') }}</span>
     </div>
 
     <!-- 空状态 -->
@@ -17,8 +17,8 @@
           <polyline points="10 9 9 9 8 9" />
         </svg>
       </div>
-      <p class="empty-title">请选择一个 Markdown 文件</p>
-      <p class="empty-desc">从左侧文件树中选择文件开始预览</p>
+      <p class="empty-title">{{ t('view.emptyTitle') }}</p>
+      <p class="empty-desc">{{ t('view.emptyDesc') }}</p>
     </div>
 
     <!-- 有文件时显示内容 -->
@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { useTabStore } from '@/stores/tabStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useEditorStore } from '@/stores/editorStore'
@@ -61,6 +62,7 @@ import MarkdownPreview from '@/components/preview/MarkdownPreview.vue'
 import SourceEditor from '@/components/editor/SourceEditor.vue'
 import SplitView from '@/components/split/SplitView.vue'
 
+const { t } = useI18n()
 const tabStore = useTabStore()
 const settingsStore = useSettingsStore()
 const editorStore = useEditorStore()

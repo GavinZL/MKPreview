@@ -5,62 +5,62 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum AppError {
     // ── 文件系统相关 (FS_*) ──
-    #[error("IO错误: {0}")]
+    #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("文件不存在: {path}")]
+    #[error("File not found: {path}")]
     FileNotFound { path: String },
 
-    #[error("路径不在允许范围内: {path}")]
+    #[error("Path not allowed: {path}")]
     PathNotInScope { path: String },
 
-    #[error("非法路径: {path}")]
+    #[error("Invalid path: {path}")]
     InvalidPath { path: String },
 
-    #[error("不是Markdown文件: {path}")]
+    #[error("Not a Markdown file: {path}")]
     NotAMarkdownFile { path: String },
 
-    #[error("不是目录: {path}")]
+    #[error("Not a directory: {path}")]
     NotADirectory { path: String },
 
-    #[error("写入内容过大: {size} 字节 (限制 10MB)")]
+    #[error("File too large: {size} bytes (limit 10MB)")]
     FileTooLarge { size: usize },
 
-    #[error("权限不足: {path}")]
+    #[error("Permission denied: {path}")]
     PermissionDenied { path: String },
 
     // ── 配置相关 (CFG_*) ──
-    #[error("配置序列化失败: {0}")]
+    #[error("Config serialization failed: {0}")]
     ConfigSerialize(String),
 
-    #[error("配置反序列化失败: {0}")]
+    #[error("Config deserialization failed: {0}")]
     ConfigDeserialize(String),
 
-    #[error("配置值非法: {0}")]
+    #[error("Invalid config value: {0}")]
     InvalidSettings(String),
 
-    #[error("应用数据目录获取失败")]
+    #[error("Failed to get app data directory")]
     AppDataDirNotFound,
 
     // ── 监控相关 (WATCH_*) ──
-    #[error("文件监控启动失败: {0}")]
+    #[error("File watcher start failed: {0}")]
     WatcherStart(String),
 
-    #[error("文件监控运行时错误: {0}")]
+    #[error("File watcher runtime error: {0}")]
     WatcherRuntime(String),
 
-    #[error("监控路径已不存在: {path}")]
+    #[error("Watched path no longer exists: {path}")]
     WatcherPathGone { path: String },
 
     // ── 搜索相关 (SEARCH_*) ──
-    #[error("搜索目录非法: {path}")]
+    #[error("Invalid search directory: {path}")]
     InvalidSearchDirectory { path: String },
 
-    #[error("搜索超时")]
+    #[error("Search timeout")]
     SearchTimeout,
 
     // ── IPC / 通用 ──
-    #[error("内部错误: {0}")]
+    #[error("Internal error: {0}")]
     Internal(String),
 }
 
@@ -213,16 +213,16 @@ mod tests {
     #[test]
     fn test_error_display() {
         let err = AppError::FileNotFound { path: "/a.md".to_string() };
-        assert_eq!(err.to_string(), "文件不存在: /a.md");
+        assert_eq!(err.to_string(), "File not found: /a.md");
 
         let err = AppError::FileTooLarge { size: 1024 };
-        assert_eq!(err.to_string(), "写入内容过大: 1024 字节 (限制 10MB)");
+        assert_eq!(err.to_string(), "File too large: 1024 bytes (limit 10MB)");
 
         let err = AppError::Internal("oops".to_string());
-        assert_eq!(err.to_string(), "内部错误: oops");
+        assert_eq!(err.to_string(), "Internal error: oops");
 
         let err = AppError::InvalidPath { path: "/bad".to_string() };
-        assert_eq!(err.to_string(), "非法路径: /bad");
+        assert_eq!(err.to_string(), "Invalid path: /bad");
     }
 
     #[test]
@@ -269,7 +269,7 @@ mod tests {
         let err = AppError::FileNotFound { path: "/test.md".to_string() };
         let resp: ErrorResponse = err.into();
         assert_eq!(resp.code, "FS_NOT_FOUND");
-        assert_eq!(resp.message, "文件不存在: /test.md");
+        assert_eq!(resp.message, "File not found: /test.md");
         assert!(resp.details.is_some());
         let details = resp.details.unwrap();
         assert_eq!(details["path"], "/test.md");
