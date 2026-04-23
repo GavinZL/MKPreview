@@ -46,7 +46,7 @@
   font-weight: 700;
   margin: 2em 0 0.8em;
   padding-left: 12px;
-  border-left: 4px solid var(--accent-red);
+  border-left: 4px solid var(--preview-accent-red, var(--accent-red));
 }
 
 /* H3: 1.4em, 600 */
@@ -97,7 +97,7 @@
   text-decoration: none;
   opacity: 0;
   transition: opacity 0.15s;
-  color: var(--accent);
+  color: var(--preview-accent, var(--accent));
   font-size: 0.85em;
 }
 
@@ -143,7 +143,7 @@
   background: var(--bg-code);
   padding: 2px 6px;
   border-radius: 3px;
-  color: var(--accent-red);
+  color: var(--preview-accent-red, var(--accent-red));
   word-break: break-word;
 }
 
@@ -154,7 +154,7 @@
 
 /* 高亮标记 */
 .mk-body mark {
-  background: color-mix(in srgb, var(--accent-amber) 30%, transparent);
+  background: color-mix(in srgb, var(--preview-accent-amber, var(--accent-amber)) 30%, transparent);
   color: var(--text-primary);
   padding: 0 2px;
   border-radius: 2px;
@@ -251,8 +251,8 @@
 }
 
 .mk-body .task-list-item > input[type="checkbox"]:checked {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--preview-accent, var(--accent));
+  border-color: var(--preview-accent, var(--accent));
 }
 
 .mk-body .task-list-item > input[type="checkbox"]:checked::after {
@@ -276,7 +276,7 @@
 .mk-body blockquote {
   margin: 1.2em 0;
   padding: 1em 1.2em;
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid var(--preview-border-accent, var(--accent));
   background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
   border-radius: 0 6px 6px 0;
   color: var(--text-secondary);
@@ -300,13 +300,13 @@
 
 /* 嵌套引用：竖线颜色渐变变浅 */
 .mk-body blockquote blockquote {
-  border-left-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  border-left-color: color-mix(in srgb, var(--preview-border-accent, var(--accent)) 60%, transparent);
   background: color-mix(in srgb, var(--bg-secondary) 30%, transparent);
   margin: 0.6em 0;
 }
 
 .mk-body blockquote blockquote blockquote {
-  border-left-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  border-left-color: color-mix(in srgb, var(--preview-border-accent, var(--accent)) 40%, transparent);
   background: color-mix(in srgb, var(--bg-secondary) 15%, transparent);
 }
 
@@ -316,7 +316,7 @@
 }
 
 .mk-body blockquote a {
-  color: var(--accent);
+  color: var(--preview-accent, var(--accent));
 }
 
 /* -------------------- 8.6 表格 -------------------- */
@@ -362,7 +362,7 @@
 
 /* 悬浮行高亮 */
 .mk-body tbody tr:hover {
-  background: color-mix(in srgb, var(--accent) 5%, var(--bg-secondary));
+  background: color-mix(in srgb, var(--preview-accent, var(--accent)) 5%, var(--bg-secondary));
 }
 
 /* -------------------- 8.7 分隔线 -------------------- */
@@ -377,7 +377,7 @@
 /* -------------------- 8.8 链接 -------------------- */
 
 .mk-body a {
-  color: var(--accent);
+  color: var(--preview-text-link, var(--accent));
   text-decoration: none;
   transition: color 0.15s, text-decoration 0.15s;
 }
@@ -394,14 +394,14 @@
   height: 0.7em;
   margin-left: 0.2em;
   margin-bottom: 0.15em;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233B82F6' stroke-width='2.5'%3E%3Cpath d='M7 17L17 7M17 7H7M17 7V17'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
+  background-color: var(--preview-text-link, var(--accent));
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpath d='M7 17L17 7M17 7H7M17 7V17'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpath d='M7 17L17 7M17 7H7M17 7V17'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
   vertical-align: middle;
-}
-
-[data-theme="dark"] .mk-body a.external-link::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2358A6FF' stroke-width='2.5'%3E%3Cpath d='M7 17L17 7M17 7H7M17 7V17'/%3E%3C/svg%3E");
 }
 
 /* 锚点链接 */

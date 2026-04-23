@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import type { Settings, ThemePreference, DisplayMode } from '@/types'
+import type { Settings, ThemePreference, DisplayMode, BuiltInPreviewThemeId, PreviewTemplateId, SavedCustomTheme } from '@/types'
 import { tauriCommands } from '@/services/tauriCommands'
 import { invokeWithDefault } from '@/services/errorHandler'
 
@@ -21,6 +21,9 @@ const defaultSettings: Settings = {
   enableFolding: true,
   fontBody: '',
   fontCode: '',
+  previewTheme: 'default',
+  previewTemplate: 'default',
+  customThemes: [],
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -41,6 +44,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const fontCode = ref('')
   const sidebarWidth = ref(260)
   const treeExpandedState = ref<Record<string, boolean>>({})
+  const previewTheme = ref<BuiltInPreviewThemeId>('default')
+  const previewTemplate = ref<PreviewTemplateId>('default')
+  const customThemes = ref<SavedCustomTheme[]>([])
 
   // Getters
   const isDark = computed(() => {
@@ -59,6 +65,22 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setDisplayMode(mode: DisplayMode) {
     displayMode.value = mode
+  }
+
+  function setPreviewTheme(id: BuiltInPreviewThemeId) {
+    previewTheme.value = id
+  }
+
+  function setPreviewTemplate(id: PreviewTemplateId) {
+    previewTemplate.value = id
+  }
+
+  function addCustomTheme(theme: SavedCustomTheme) {
+    customThemes.value = [theme, ...customThemes.value].slice(0, 10)
+  }
+
+  function deleteCustomTheme(id: string) {
+    customThemes.value = customThemes.value.filter(t => t.id !== id)
   }
 
   function setFontSize(size: number) {
@@ -99,6 +121,9 @@ export const useSettingsStore = defineStore('settings', () => {
     enableFolding.value = settings.enableFolding ?? true
     fontBody.value = settings.fontBody ?? ''
     fontCode.value = settings.fontCode ?? ''
+    previewTheme.value = settings.previewTheme ?? 'default'
+    previewTemplate.value = settings.previewTemplate ?? 'default'
+    customThemes.value = settings.customThemes ?? []
   }
 
   // 保存到后端（防抖在外部或内部实现）
@@ -132,12 +157,15 @@ export const useSettingsStore = defineStore('settings', () => {
       enableFolding: enableFolding.value,
       fontBody: fontBody.value,
       fontCode: fontCode.value,
+      previewTheme: previewTheme.value,
+      previewTemplate: previewTemplate.value,
+      customThemes: customThemes.value,
     }
   }
 
   // Watch 配置变化自动保存
   watch(
-    [theme, fontSize, codeFontSize, showLineNumbers, autoSave, autoSaveInterval, sidebarWidth, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode],
+    [theme, fontSize, codeFontSize, showLineNumbers, autoSave, autoSaveInterval, sidebarWidth, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode, previewTheme, previewTemplate, customThemes],
     () => { scheduleSave() },
     { deep: true }
   )
@@ -147,11 +175,11 @@ export const useSettingsStore = defineStore('settings', () => {
     theme, displayMode, fontSize, codeFontSize,
     recentDirectories, lastDirectory, showLineNumbers,
     autoSave, autoSaveInterval, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode,
-    sidebarWidth, treeExpandedState,
+    sidebarWidth, treeExpandedState, previewTheme, previewTemplate, customThemes,
     // Getters
     isDark, resolvedTheme,
     // Actions
-    setTheme, setDisplayMode, setFontSize,
+    setTheme, setDisplayMode, setPreviewTheme, setPreviewTemplate, addCustomTheme, deleteCustomTheme, setFontSize,
     addRecentDirectory, loadSettings, scheduleSave,
     toSettingsObject,
   }

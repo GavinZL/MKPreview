@@ -57,6 +57,28 @@
 
             <!-- 预览设置 -->
             <SettingsSection title="预览">
+              <SettingsRow label="预览主题" description="Markdown 预览区配色方案">
+                <select v-model="previewTheme" class="select-box">
+                  <option
+                    v-for="t in builtInPreviewThemes"
+                    :key="t.id"
+                    :value="t.id"
+                  >
+                    {{ t.name }}
+                  </option>
+                </select>
+              </SettingsRow>
+              <SettingsRow label="预览风格" description="Markdown 渲染排版风格">
+                <select v-model="previewTemplate" class="select-box">
+                  <option
+                    v-for="t in previewTemplates"
+                    :key="t.id"
+                    :value="t.id"
+                  >
+                    {{ t.name }}
+                  </option>
+                </select>
+              </SettingsRow>
               <SettingsRow label="Mermaid 图表" description="启用 Mermaid 图表渲染">
                 <Toggle v-model="enableMermaid" />
               </SettingsRow>
@@ -77,7 +99,9 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import SettingsSection from './SettingsSection.vue'
 import SettingsRow from './SettingsRow.vue'
 import Toggle from '@/components/common/Toggle.vue'
-import type { ThemePreference } from '@/types'
+import { builtInPreviewThemes } from '@/lib/previewThemes'
+import { previewTemplates } from '@/lib/previewTemplates'
+import type { ThemePreference, BuiltInPreviewThemeId, PreviewTemplateId } from '@/types'
 
 interface Props {
   visible: boolean
@@ -140,6 +164,16 @@ const enableMermaid = computed({
 const enableKaTeX = computed({
   get: () => store.enableKaTeX,
   set: (v) => { store.enableKaTeX = v },
+})
+
+const previewTheme = computed({
+  get: () => store.previewTheme,
+  set: (v) => store.setPreviewTheme(v as BuiltInPreviewThemeId),
+})
+
+const previewTemplate = computed({
+  get: () => store.previewTemplate,
+  set: (v) => store.setPreviewTemplate(v as PreviewTemplateId),
 })
 
 function close() {

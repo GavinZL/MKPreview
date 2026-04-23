@@ -82,6 +82,28 @@
 
     <!-- 右侧：搜索、设置、主题切换按钮 -->
     <div class="toolbar-right">
+      <!-- 预览主题快速切换 -->
+      <select
+        v-model="previewTheme"
+        class="toolbar-select"
+        title="切换预览主题"
+      >
+        <option v-for="t in builtInPreviewThemes" :key="t.id" :value="t.id">
+          {{ t.name }}
+        </option>
+      </select>
+
+      <!-- 预览风格快速切换 -->
+      <select
+        v-model="previewTemplate"
+        class="toolbar-select"
+        title="切换预览风格"
+      >
+        <option v-for="t in previewTemplates" :key="t.id" :value="t.id">
+          {{ t.name }}
+        </option>
+      </select>
+
       <button
         class="icon-btn"
         title="设置"
@@ -117,17 +139,31 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useUiStore } from '@/stores/uiStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useNavigationStore } from '@/stores/navigationStore'
 import { useMenuEvents } from '@/composables/useMenuEvents'
 import { useNavigationActions } from '@/composables/useNavigationActions'
+import { builtInPreviewThemes } from '@/lib/previewThemes'
+import { previewTemplates } from '@/lib/previewTemplates'
+import type { BuiltInPreviewThemeId, PreviewTemplateId } from '@/types'
 
 const uiStore = useUiStore()
 const settingsStore = useSettingsStore()
 const navigationStore = useNavigationStore()
 const { openDirectoryDialog } = useMenuEvents()
 const { navigateBack, navigateForward } = useNavigationActions()
+
+const previewTheme = computed({
+  get: () => settingsStore.previewTheme,
+  set: (v) => settingsStore.setPreviewTheme(v as BuiltInPreviewThemeId),
+})
+
+const previewTemplate = computed({
+  get: () => settingsStore.previewTemplate,
+  set: (v) => settingsStore.setPreviewTemplate(v as PreviewTemplateId),
+})
 
 function switchMode(mode: 'preview' | 'source' | 'split') {
   settingsStore.setDisplayMode(mode)
@@ -250,5 +286,31 @@ function toggleTheme() {
 .icon-btn svg {
   width: 16px;
   height: 16px;
+}
+
+.toolbar-select {
+  appearance: none;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 18px 3px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  max-width: 80px;
+}
+
+.toolbar-select:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.toolbar-select:focus {
+  border-color: var(--accent);
 }
 </style>

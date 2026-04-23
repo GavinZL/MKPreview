@@ -11,6 +11,8 @@
       v-show="!isRendering"
       ref="articleRef"
       class="mk-body"
+      :data-preview-theme="previewTheme"
+      :data-preview-template="previewTemplate"
       v-html="renderedHtml"
     ></article>
   </div>
@@ -24,6 +26,8 @@ import { renderMermaidInContainer } from '@/lib/mermaidConfig'
 import { useTabStore } from '@/stores/tabStore'
 import { useNavigationStore } from '@/stores/navigationStore'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { usePreviewTheme } from '@/composables/usePreviewTheme'
+import { usePreviewTemplate } from '@/composables/usePreviewTemplate'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import 'katex/dist/katex.min.css'
 import '@/assets/styles/markdown/index.css'
@@ -47,6 +51,8 @@ const isRendering = ref(false)
 const tabStore = useTabStore()
 const navigationStore = useNavigationStore()
 const settingsStore = useSettingsStore()
+const { currentTheme: previewTheme } = usePreviewTheme()
+const { currentTemplate: previewTemplate } = usePreviewTemplate()
 
 // Cancel token for render cancellation
 let renderCancelToken = 0

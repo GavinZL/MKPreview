@@ -1,0 +1,27 @@
+/* ============================================================
+   MKPreview - 预览区主题变量基础设施
+   被覆盖的变量按优先级从高到低：
+     1. [data-preview-theme] 显式定义
+     2. 全局 [data-theme="dark"] 定义
+     3. :root 默认值
+   ============================================================ */
+
+:root {
+  /* 预览区容器背景（可选，用于需要整体氛围色的主题） */
+  --preview-bg: transparent;
+
+  /* 强调色系 */
+  --preview-accent: var(--accent);
+  --preview-accent-hover: var(--accent-hover);
+  --preview-accent-red: var(--accent-red);
+  --preview-accent-green: var(--accent-green);
+  --preview-accent-amber: var(--accent-amber);
+  --preview-accent-purple: var(--accent-purple);
+
+  /* 文字链接色 */
+  --preview-text-link: var(--text-link);
+  --preview-text-link-hover: var(--text-link-hover);
+
+  /* 装饰线/引用块颜色 */
+  --preview-border-accent: var(--accent);
+}

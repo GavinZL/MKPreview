@@ -1,3 +1,8 @@
+/* Preview Theme & Template System */
+@import './preview-themes/_vars.css';
+@import './preview-themes/index.css';
+@import './preview-templates/index.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

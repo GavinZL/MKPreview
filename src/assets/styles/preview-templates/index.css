@@ -1,0 +1,529 @@
+/* ============================================================
+   MKPreview - 预览风格模板系统
+   文件: src/assets/styles/preview-templates/index.css
+   范围: .mk-body 容器下的排版风格覆盖
+   ============================================================ */
+
+/* ============================================================
+   blog - 博客文章风格
+   ============================================================ */
+
+.mk-body[data-preview-template="blog"] {
+  max-width: 720px;
+  padding: 48px 32px;
+  font-size: 17px;
+  line-height: 1.9;
+  font-family: var(--font-body);
+}
+
+.mk-body[data-preview-template="blog"] h1 {
+  font-size: 2.4em;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: none;
+  margin: 1.5em 0 0.8em;
+  padding-bottom: 0;
+}
+
+.mk-body[data-preview-template="blog"] h1:first-child {
+  margin-top: 0;
+}
+
+.mk-body[data-preview-template="blog"] h1::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--preview-accent, var(--accent));
+  margin: 0.6em auto 0;
+  border-radius: 2px;
+}
+
+.mk-body[data-preview-template="blog"] h2 {
+  font-size: 1.6em;
+  font-weight: 600;
+  margin: 2.2em 0 0.8em;
+  padding-left: 0;
+  border-left: none;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3em;
+}
+
+.mk-body[data-preview-template="blog"] h3 {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin: 1.8em 0 0.6em;
+  color: var(--text-secondary);
+}
+
+.mk-body[data-preview-template="blog"] h4 {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.mk-body[data-preview-template="blog"] p {
+  margin-bottom: 1.6em;
+  text-align: justify;
+}
+
+.mk-body[data-preview-template="blog"] > p:first-of-type::first-letter {
+  font-size: 3em;
+  float: left;
+  line-height: 0.8;
+  margin-right: 0.1em;
+  font-weight: 700;
+  color: var(--preview-accent, var(--accent));
+}
+
+.mk-body[data-preview-template="blog"] img {
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  margin: 2em auto;
+}
+
+.mk-body[data-preview-template="blog"] img:hover {
+  transform: scale(1.01);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.mk-body[data-preview-template="blog"] blockquote {
+  border-left: none;
+  border-top: 2px solid var(--preview-border-accent, var(--accent));
+  border-bottom: 2px solid var(--preview-border-accent, var(--accent));
+  background: transparent;
+  padding: 1.2em 1.5em;
+  margin: 2em 0;
+  text-align: center;
+  font-style: italic;
+  font-size: 1.05em;
+}
+
+.mk-body[data-preview-template="blog"] .code-block-wrapper {
+  border-radius: 10px;
+  margin: 1.5em 0;
+}
+
+.mk-body[data-preview-template="blog"] hr {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border),
+    transparent
+  );
+  margin: 2.5em 0;
+}
+
+@media print {
+  .mk-body[data-preview-template="blog"] {
+    max-width: none;
+    padding: 0;
+  }
+  .mk-body[data-preview-template="blog"] h1::after {
+    display: none;
+  }
+  .mk-body[data-preview-template="blog"] > p:first-of-type::first-letter {
+    font-size: inherit;
+    float: none;
+    margin: 0;
+  }
+}
+
+/* ============================================================
+   tech-doc - 技术文档风格
+   ============================================================ */
+
+.mk-body[data-preview-template="tech-doc"] {
+  max-width: 900px;
+  padding: 32px 40px;
+  font-size: 15px;
+  line-height: 1.7;
+  font-family: var(--font-ui);
+}
+
+.mk-body[data-preview-template="tech-doc"] h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin: 1.5em 0 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid var(--border);
+}
+
+.mk-body[data-preview-template="tech-doc"] h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin: 1.8em 0 0.6em;
+  padding-left: 0;
+  border-left: none;
+  color: var(--text-primary);
+}
+
+.mk-body[data-preview-template="tech-doc"] h2::before {
+  content: '#';
+  margin-right: 0.4em;
+  color: var(--preview-accent, var(--accent));
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.mk-body[data-preview-template="tech-doc"] h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 1.5em 0 0.5em;
+  color: var(--text-secondary);
+}
+
+.mk-body[data-preview-template="tech-doc"] h4 {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 1.2em 0 0.4em;
+}
+
+.mk-body[data-preview-template="tech-doc"] p {
+  margin-bottom: 0.8em;
+}
+
+.mk-body[data-preview-template="tech-doc"] .code-block-wrapper {
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin: 1em 0;
+}
+
+.mk-body[data-preview-template="tech-doc"] code {
+  font-size: 0.85em;
+  padding: 1px 4px;
+}
+
+.mk-body[data-preview-template="tech-doc"] table {
+  font-size: 0.9em;
+}
+
+.mk-body[data-preview-template="tech-doc"] thead th,
+.mk-body[data-preview-template="tech-doc"] tbody td {
+  padding: 8px 12px;
+}
+
+.mk-body[data-preview-template="tech-doc"] li {
+  margin-bottom: 0.2em;
+}
+
+.mk-body[data-preview-template="tech-doc"] blockquote {
+  border-left: 4px solid var(--preview-accent, var(--accent));
+  background: var(--bg-secondary);
+  border-radius: 0 6px 6px 0;
+  padding: 0.8em 1em;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+
+.mk-body[data-preview-template="tech-doc"] img {
+  border-radius: 4px;
+  box-shadow: none;
+  border: 1px solid var(--border);
+  margin: 1em 0;
+}
+
+.mk-body[data-preview-template="tech-doc"] img:hover {
+  transform: none;
+}
+
+@media print {
+  .mk-body[data-preview-template="tech-doc"] {
+    max-width: none;
+    padding: 0;
+  }
+}
+
+/* ============================================================
+   academic - 学术论文风格
+   ============================================================ */
+
+.mk-body[data-preview-template="academic"] {
+  max-width: 800px;
+  padding: 48px 56px;
+  font-size: 16px;
+  line-height: 1.9;
+  font-family: 'Times New Roman', 'Noto Serif SC', Georgia, serif;
+  color: #000;
+}
+
+[data-theme="dark"] .mk-body[data-preview-template="academic"] {
+  color: var(--text-primary);
+}
+
+.mk-body[data-preview-template="academic"] {
+  counter-reset: h2-counter;
+}
+
+.mk-body[data-preview-template="academic"] h1 {
+  font-size: 1.8em;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: none;
+  margin: 0 0 1.5em;
+  padding-bottom: 0;
+}
+
+.mk-body[data-preview-template="academic"] h1 + p {
+  text-align: center;
+  font-size: 0.95em;
+  color: var(--text-secondary);
+  margin-bottom: 2em;
+}
+
+.mk-body[data-preview-template="academic"] h2 {
+  font-size: 1.4em;
+  font-weight: 700;
+  margin: 2em 0 0.8em;
+  padding-left: 0;
+  border-left: none;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.2em;
+  counter-increment: h2-counter;
+}
+
+.mk-body[data-preview-template="academic"] h2::before {
+  content: counter(h2-counter) '. ';
+  color: var(--text-primary);
+}
+
+.mk-body[data-preview-template="academic"] h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  font-style: italic;
+  margin: 1.5em 0 0.5em;
+}
+
+.mk-body[data-preview-template="academic"] h4 {
+  font-size: 1em;
+  font-weight: 600;
+  margin: 1.2em 0 0.4em;
+}
+
+.mk-body[data-preview-template="academic"] p {
+  margin-bottom: 0.8em;
+  text-indent: 2em;
+}
+
+.mk-body[data-preview-template="academic"] p:first-of-type {
+  text-indent: 0;
+}
+
+.mk-body[data-preview-template="academic"] li p,
+.mk-body[data-preview-template="academic"] blockquote p {
+  text-indent: 0;
+}
+
+.mk-body[data-preview-template="academic"] blockquote {
+  border-left: none;
+  background: transparent;
+  padding: 0 2em;
+  margin: 1.2em 0;
+  font-size: 0.95em;
+  color: var(--text-secondary);
+}
+
+.mk-body[data-preview-template="academic"] blockquote p {
+  margin-bottom: 0.4em;
+}
+
+.mk-body[data-preview-template="academic"] .code-block-wrapper {
+  border-radius: 0;
+  border: 1px solid var(--border);
+  margin: 1em 0;
+}
+
+.mk-body[data-preview-template="academic"] pre {
+  background: var(--bg-secondary);
+  border-radius: 0;
+}
+
+.mk-body[data-preview-template="academic"] table {
+  border-collapse: collapse;
+  margin: 1.2em 0;
+  font-size: 0.9em;
+}
+
+.mk-body[data-preview-template="academic"] thead {
+  border-top: 2px solid var(--text-primary);
+  border-bottom: 1px solid var(--text-primary);
+}
+
+.mk-body[data-preview-template="academic"] tbody {
+  border-bottom: 2px solid var(--text-primary);
+}
+
+.mk-body[data-preview-template="academic"] thead th {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  font-weight: 600;
+}
+
+.mk-body[data-preview-template="academic"] tbody td {
+  border: none;
+  padding: 6px 16px;
+}
+
+.mk-body[data-preview-template="academic"] tbody tr:nth-child(even) {
+  background: transparent;
+}
+
+.mk-body[data-preview-template="academic"] .image-wrapper {
+  margin: 1.5em 0;
+}
+
+.mk-body[data-preview-template="academic"] .image-caption {
+  font-size: 0.85em;
+  text-align: center;
+  color: var(--text-secondary);
+  margin-top: 0.5em;
+}
+
+.mk-body[data-preview-template="academic"] hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2em 5em;
+}
+
+@media print {
+  .mk-body[data-preview-template="academic"] {
+    max-width: none;
+    padding: 0;
+    color: #000;
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+}
+
+/* ============================================================
+   minimalist - 极简风格
+   ============================================================ */
+
+.mk-body[data-preview-template="minimalist"] {
+  max-width: 680px;
+  padding: 64px 40px;
+  font-size: 16px;
+  line-height: 2.0;
+  font-family: var(--font-body);
+}
+
+.mk-body[data-preview-template="minimalist"] h1 {
+  font-size: 1.8em;
+  font-weight: 400;
+  margin: 2em 0 1em;
+  padding-bottom: 0;
+  border-bottom: none;
+  letter-spacing: 0.05em;
+}
+
+.mk-body[data-preview-template="minimalist"] h2 {
+  font-size: 1.3em;
+  font-weight: 400;
+  margin: 2.5em 0 0.8em;
+  padding-left: 0;
+  border-left: none;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.mk-body[data-preview-template="minimalist"] h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 2em 0 0.6em;
+  color: var(--text-muted);
+}
+
+.mk-body[data-preview-template="minimalist"] h4,
+.mk-body[data-preview-template="minimalist"] h5,
+.mk-body[data-preview-template="minimalist"] h6 {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 1.5em 0 0.4em;
+}
+
+.mk-body[data-preview-template="minimalist"] p {
+  margin-bottom: 2em;
+}
+
+.mk-body[data-preview-template="minimalist"] code {
+  background: transparent;
+  padding: 0;
+  color: var(--preview-accent, var(--accent));
+  font-weight: 500;
+}
+
+.mk-body[data-preview-template="minimalist"] .code-block-wrapper {
+  border-radius: 0;
+  border: none;
+  border-left: 2px solid var(--border);
+  margin: 2em 0;
+}
+
+.mk-body[data-preview-template="minimalist"] .code-header {
+  display: none;
+}
+
+.mk-body[data-preview-template="minimalist"] pre {
+  background: transparent;
+  border-radius: 0;
+  padding: 1em 1.5em;
+}
+
+.mk-body[data-preview-template="minimalist"] blockquote {
+  border-left: 2px solid var(--border);
+  background: transparent;
+  border-radius: 0;
+  padding: 0.5em 1.2em;
+  margin: 2em 0;
+  color: var(--text-secondary);
+}
+
+.mk-body[data-preview-template="minimalist"] img {
+  border-radius: 0;
+  box-shadow: none;
+  margin: 2em auto;
+}
+
+.mk-body[data-preview-template="minimalist"] img:hover {
+  transform: none;
+}
+
+.mk-body[data-preview-template="minimalist"] hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 3em 0;
+}
+
+.mk-body[data-preview-template="minimalist"] ul,
+.mk-body[data-preview-template="minimalist"] ol {
+  margin-left: 1em;
+  padding-left: 1em;
+}
+
+.mk-body[data-preview-template="minimalist"] table {
+  border-collapse: collapse;
+}
+
+.mk-body[data-preview-template="minimalist"] thead th {
+  border-bottom: 2px solid var(--text-primary);
+  background: transparent;
+}
+
+.mk-body[data-preview-template="minimalist"] tbody td {
+  border-bottom: 1px solid var(--border);
+}
+
+.mk-body[data-preview-template="minimalist"] tbody tr:nth-child(even) {
+  background: transparent;
+}
+
+@media print {
+  .mk-body[data-preview-template="minimalist"] {
+    max-width: none;
+    padding: 0;
+  }
+}
