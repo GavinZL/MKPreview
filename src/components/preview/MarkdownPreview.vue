@@ -312,9 +312,11 @@ function processImagePaths(container: HTMLElement) {
     // 跳过已经是合法 URL 的图片
     if (/^https?:\/\//.test(src) || src.startsWith('data:') || src.startsWith('asset:')) return
     try {
+      // 此时 src 应该已经是绝对路径（由 markdownIt.ts 中的 resolveRelativePath 处理过）
       img.src = convertFileSrc(src)
     } catch {
       // 非 Tauri 环境或转换失败时保留原路径
+      console.warn('[图片路径转换] 转换失败:', src)
     }
   })
 }

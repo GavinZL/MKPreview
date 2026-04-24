@@ -92,7 +92,10 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
     linkify: true,      // 自动链接 URL
     typographer: true,  // 排版增强
     breaks: true,       // 单换行 → <br>
-  })
+  }) as MarkdownIt & { options: { baseDir?: string } }
+
+  // 存储 baseDir 供渲染时使用
+  (md as any).options.baseDir = baseDir
 
   // 1. markdown-it-anchor
   if (enableAnchor) {
@@ -224,12 +227,14 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
   md.renderer.rules.image = (tokens, idx, options, env, self) => {
     const token = tokens[idx]
     const srcIndex = token.attrIndex('src')
-    if (srcIndex >= 0 && baseDir) {
+    if (srcIndex >= 0) {
+      // 优先从 env 获取 baseDir，其次从 md.options 获取
+      const currentBaseDir = (env && env.baseDir) || (md as any).options.baseDir || baseDir
       let src = token.attrs![srcIndex][1]
       // 解码 URL 编码的中文路径（markdown-it 会对非 ASCII 字符进行 percent-encoding）
       try { src = decodeURIComponent(src) } catch { /* 保留原始值 */ }
       if (!/^https?:\/\//.test(src) && !src.startsWith('data:') && !src.startsWith('asset:')) {
-        const resolvedPath = resolveRelativePath(baseDir, src)
+        const resolvedPath = resolveRelativePath(currentBaseDir, src)
         token.attrs![srcIndex][1] = resolvedPath
       }
     }
@@ -344,5 +349,6 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
  */
 export function renderMarkdown(content: string, baseDir?: string): string {
   const md = getMarkdownIt({ baseDir })
+  // 通过 env 传递 baseDir 给渲染规则
   return md.render(content, { baseDir })
 }

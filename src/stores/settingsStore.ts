@@ -3,9 +3,12 @@ import { ref, computed, watch } from 'vue'
 import type { Settings, ThemePreference, DisplayMode, BuiltInPreviewThemeId, PreviewTemplateId, SavedCustomTheme, AppLocale } from '@/types'
 import { tauriCommands } from '@/services/tauriCommands'
 import { invokeWithDefault } from '@/services/errorHandler'
+import { updateMermaidTheme } from '@/lib/mermaidConfig'
+import { setLocale as applyLocale } from '@/i18n'
 
 const defaultSettings: Settings = {
   theme: 'system',
+  displayMode: 'preview',
   fontSize: 16,
   codeFontSize: 14,
   recentDirectories: [],
@@ -63,6 +66,15 @@ export const useSettingsStore = defineStore('settings', () => {
   // Actions
   function setTheme(t: ThemePreference) {
     theme.value = t
+    // 立即应用主题到 DOM
+    const resolved = t === 'system' 
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : t
+    document.documentElement.setAttribute('data-theme', resolved)
+    // 同步 Mermaid 主题
+    updateMermaidTheme(resolved).catch(err => {
+      console.error('[settingsStore] Mermaid 主题同步失败:', err)
+    })
   }
 
   function setDisplayMode(mode: DisplayMode) {
@@ -79,6 +91,8 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setLocale(l: AppLocale) {
     locale.value = l
+    // 立即应用语言
+    applyLocale(l)
   }
 
   function addCustomTheme(theme: SavedCustomTheme) {
@@ -113,6 +127,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function applySettings(settings: Settings) {
     theme.value = settings.theme
+    displayMode.value = settings.displayMode
     fontSize.value = settings.fontSize
     codeFontSize.value = settings.codeFontSize
     recentDirectories.value = settings.recentDirectories
@@ -122,15 +137,26 @@ export const useSettingsStore = defineStore('settings', () => {
     showLineNumbers.value = settings.showLineNumbers
     autoSave.value = settings.autoSave
     autoSaveInterval.value = settings.autoSaveInterval
-    enableMermaid.value = settings.enableMermaid ?? true
-    enableKaTeX.value = settings.enableKaTeX ?? true
-    enableFolding.value = settings.enableFolding ?? true
-    fontBody.value = settings.fontBody ?? ''
-    fontCode.value = settings.fontCode ?? ''
-    previewTheme.value = settings.previewTheme ?? 'default'
-    previewTemplate.value = settings.previewTemplate ?? 'default'
-    customThemes.value = settings.customThemes ?? []
-    locale.value = settings.locale ?? 'zh-CN'
+    enableMermaid.value = settings.enableMermaid
+    enableKaTeX.value = settings.enableKaTeX
+    enableFolding.value = settings.enableFolding
+    fontBody.value = settings.fontBody
+    fontCode.value = settings.fontCode
+    previewTheme.value = settings.previewTheme
+    previewTemplate.value = settings.previewTemplate
+    customThemes.value = settings.customThemes
+    locale.value = settings.locale
+
+    // 应用字体 CSS 变量
+    if (settings.fontBody) {
+      document.documentElement.style.setProperty('--font-body', settings.fontBody)
+    }
+    if (settings.fontCode) {
+      document.documentElement.style.setProperty('--font-code', settings.fontCode)
+    }
+    // 应用字体大小 CSS 变量
+    document.documentElement.style.setProperty('--font-size-base', `${settings.fontSize}px`)
+    document.documentElement.style.setProperty('--code-font-size', `${settings.codeFontSize}px`)
   }
 
   // 保存到后端（防抖在外部或内部实现）
@@ -149,6 +175,7 @@ export const useSettingsStore = defineStore('settings', () => {
   function toSettingsObject(): Settings {
     return {
       theme: theme.value,
+      displayMode: displayMode.value,
       fontSize: fontSize.value,
       codeFontSize: codeFontSize.value,
       recentDirectories: recentDirectories.value,
@@ -173,10 +200,35 @@ export const useSettingsStore = defineStore('settings', () => {
 
   // Watch 配置变化自动保存
   watch(
-    [theme, fontSize, codeFontSize, showLineNumbers, autoSave, autoSaveInterval, sidebarWidth, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode, previewTheme, previewTemplate, customThemes, locale],
+    [theme, displayMode, fontSize, codeFontSize, showLineNumbers, autoSave, autoSaveInterval, sidebarWidth, enableMermaid, enableKaTeX, enableFolding, fontBody, fontCode, previewTheme, previewTemplate, customThemes, locale],
     () => { scheduleSave() },
     { deep: true }
   )
+
+  // Watch 字体设置变化，动态应用 CSS 变量
+  watch(fontBody, (newFont) => {
+    if (newFont) {
+      document.documentElement.style.setProperty('--font-body', newFont)
+    } else {
+      document.documentElement.style.removeProperty('--font-body')
+    }
+  })
+
+  watch(fontCode, (newFont) => {
+    if (newFont) {
+      document.documentElement.style.setProperty('--font-code', newFont)
+    } else {
+      document.documentElement.style.removeProperty('--font-code')
+    }
+  })
+
+  watch(fontSize, (newSize) => {
+    document.documentElement.style.setProperty('--font-size-base', `${newSize}px`)
+  })
+
+  watch(codeFontSize, (newSize) => {
+    document.documentElement.style.setProperty('--code-font-size', `${newSize}px`)
+  })
 
   return {
     // State

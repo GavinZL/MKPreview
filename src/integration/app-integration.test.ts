@@ -195,6 +195,7 @@ describe('类型兼容性', () => {
   it('Settings 类型字段与 Rust 模型通过 camelCase 映射一致', () => {
     const settings: Settings = {
       theme: 'system',
+      displayMode: 'preview',
       fontSize: 16, // Rust: font_size
       codeFontSize: 14, // Rust: code_font_size
       recentDirectories: [], // Rust: recent_directories
@@ -205,8 +206,18 @@ describe('类型兼容性', () => {
       showLineNumbers: true, // Rust: show_line_numbers
       autoSave: false, // Rust: auto_save
       autoSaveInterval: 3, // Rust: auto_save_interval
+      enableMermaid: true,
+      enableKaTeX: true,
+      enableFolding: true,
+      fontBody: '',
+      fontCode: '',
+      previewTheme: 'default',
+      previewTemplate: 'default',
+      customThemes: [],
+      locale: 'zh-CN',
     }
     expect(settings.theme).toBeDefined()
+    expect(settings.displayMode).toBeDefined()
     expect(settings.fontSize).toBeDefined()
     expect(settings.codeFontSize).toBeDefined()
     expect(settings.recentDirectories).toBeDefined()
@@ -217,6 +228,15 @@ describe('类型兼容性', () => {
     expect(settings.showLineNumbers).toBeDefined()
     expect(settings.autoSave).toBeDefined()
     expect(settings.autoSaveInterval).toBeDefined()
+    expect(settings.enableMermaid).toBeDefined()
+    expect(settings.enableKaTeX).toBeDefined()
+    expect(settings.enableFolding).toBeDefined()
+    expect(settings.fontBody).toBeDefined()
+    expect(settings.fontCode).toBeDefined()
+    expect(settings.previewTheme).toBeDefined()
+    expect(settings.previewTemplate).toBeDefined()
+    expect(settings.customThemes).toBeDefined()
+    expect(settings.locale).toBeDefined()
   })
 
   it('FsChangeEvent 类型字段与 Rust 模型通过 camelCase 映射一致', () => {

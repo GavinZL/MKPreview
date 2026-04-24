@@ -76,8 +76,8 @@ defineExpose({
 }
 
 .source-editor :deep(.cm-scroller) {
-  font-family: var(--font-mono, monospace);
-  font-size: 14px;
+  font-family: var(--font-code, var(--font-mono, monospace));
+  font-size: var(--code-font-size, 14px);
   line-height: 1.6;
 }
 </style>

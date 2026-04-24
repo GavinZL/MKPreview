@@ -67,6 +67,7 @@ export interface WindowState {
 /** 用户配置 — 对应 Rust Settings */
 export interface Settings {
   theme: ThemePreference
+  displayMode: DisplayMode
   fontSize: number
   codeFontSize: number
   recentDirectories: string[]
@@ -77,16 +78,13 @@ export interface Settings {
   showLineNumbers: boolean
   autoSave: boolean
   autoSaveInterval: number
-  // Phase 2 新增
-  enableMermaid?: boolean
-  enableKaTeX?: boolean
-  enableFolding?: boolean
-  fontBody?: string
-  fontCode?: string
-  // F09 预览主题与模板
-  previewTheme?: BuiltInPreviewThemeId
-  previewTemplate?: PreviewTemplateId
-  customThemes?: SavedCustomTheme[]
-  // i18n
-  locale?: AppLocale
+  enableMermaid: boolean
+  enableKaTeX: boolean
+  enableFolding: boolean
+  fontBody: string
+  fontCode: string
+  previewTheme: BuiltInPreviewThemeId
+  previewTemplate: PreviewTemplateId
+  customThemes: SavedCustomTheme[]
+  locale: AppLocale
 }

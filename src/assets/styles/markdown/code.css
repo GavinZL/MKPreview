@@ -97,9 +97,9 @@
   padding: 14px 18px;
   background: transparent;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: var(--code-font-size, 14px);
   line-height: 1.6;
-  font-family: var(--font-mono);
+  font-family: var(--font-code, var(--font-mono));
   white-space: pre;
   word-break: normal;
   overflow-wrap: normal;
@@ -130,8 +130,8 @@
   display: block;
   padding: 0 12px 0 18px;
   color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 14px;
+  font-family: var(--font-code, var(--font-mono));
+  font-size: var(--code-font-size, 14px);
   line-height: 1.6;
   min-width: 3ch;
 }

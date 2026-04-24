@@ -11,6 +11,87 @@ pub enum ThemePreference {
     Dark,
 }
 
+/// 显示模式
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum DisplayMode {
+    #[default]
+    Preview,
+    Source,
+    Split,
+}
+
+/// 预览区内置主题 ID
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+pub enum BuiltInPreviewThemeId {
+    #[default]
+    Default,
+    Orange,
+    Purple,
+    Teal,
+    Green,
+    Red,
+    Blue,
+    Indigo,
+    Amber,
+    GeekBlack,
+    Rose,
+    Mint,
+    FullstackBlue,
+    MinimalBlack,
+    OrangeBlue,
+}
+
+/// 预览风格模板 ID
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+pub enum PreviewTemplateId {
+    #[default]
+    Default,
+    Blog,
+    TechDoc,
+    Academic,
+    Minimalist,
+}
+
+/// 自定义主题颜色配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomThemeColors {
+    pub accent: String,
+    pub accent_red: String,
+    pub accent_green: String,
+    pub accent_amber: String,
+    pub accent_purple: String,
+    pub text_link: String,
+    pub text_link_hover: String,
+    pub border_accent: String,
+    pub preview_bg_light: String,
+    pub preview_bg_dark: String,
+}
+
+/// 用户保存的自定义主题
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedCustomTheme {
+    pub id: String,
+    pub name: String,
+    pub colors: CustomThemeColors,
+    pub created_at: u64,
+}
+
+/// 应用语言
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+pub enum AppLocale {
+    #[default]
+    #[serde(rename = "zh-CN")]
+    ZhCN,
+    #[serde(rename = "en-US")]
+    EnUS,
+}
+
 /// 窗口状态
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -40,6 +121,8 @@ impl Default for WindowState {
 pub struct Settings {
     #[serde(default)]
     pub theme: ThemePreference,
+    #[serde(default)]
+    pub display_mode: DisplayMode,
     #[serde(default = "default_font_size")]
     pub font_size: u8,
     #[serde(default = "default_code_font_size")]
@@ -70,12 +153,21 @@ pub struct Settings {
     pub font_body: String,
     #[serde(default)]
     pub font_code: String,
+    #[serde(default)]
+    pub preview_theme: BuiltInPreviewThemeId,
+    #[serde(default)]
+    pub preview_template: PreviewTemplateId,
+    #[serde(default)]
+    pub custom_themes: Vec<SavedCustomTheme>,
+    #[serde(default)]
+    pub locale: AppLocale,
 }
 
 impl Default for Settings {
     fn default() -> Self {
         Self {
             theme: ThemePreference::default(),
+            display_mode: DisplayMode::default(),
             font_size: default_font_size(),
             code_font_size: default_code_font_size(),
             recent_directories: Vec::new(),
@@ -91,6 +183,10 @@ impl Default for Settings {
             enable_folding: default_true(),
             font_body: String::new(),
             font_code: String::new(),
+            preview_theme: BuiltInPreviewThemeId::default(),
+            preview_template: PreviewTemplateId::default(),
+            custom_themes: Vec::new(),
+            locale: AppLocale::default(),
         }
     }
 }

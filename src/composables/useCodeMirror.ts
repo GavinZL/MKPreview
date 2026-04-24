@@ -122,8 +122,8 @@ export function useCodeMirror(
       // 自定义主题样式
       EditorView.theme({
         '&': {
-          fontSize: '14px',
-          fontFamily: 'var(--font-mono, monospace)',
+          fontSize: 'var(--code-font-size, 14px)',
+          fontFamily: 'var(--font-code, var(--font-mono, monospace))',
           lineHeight: '1.6',
         },
         '.cm-content': {
@@ -132,8 +132,8 @@ export function useCodeMirror(
         '.cm-gutters': {
           backgroundColor: 'transparent',
           borderRight: '1px solid var(--border)',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '12px',
+          fontFamily: 'var(--font-code, var(--font-mono))',
+          fontSize: 'calc(var(--code-font-size, 14px) - 2px)',
         },
         '.cm-lineNumbers .cm-gutterElement': {
           color: 'var(--text-muted)',
