@@ -32,3 +32,4 @@ src-tauri/gen/
 src-tauri/target/
 
 src/assets/fonts/
+vscode

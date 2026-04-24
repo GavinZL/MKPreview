@@ -32,14 +32,29 @@ export function initMermaid(appTheme: 'light' | 'dark'): void {
       startOnLoad: false,
       // === 字体配置 ===
       fontFamily: 'var(--font-mono)',
+      // 增大默认字号，提升可读性
+      fontSize: 14,
       // === 流程图配置 ===
-      flowchart: { useMaxWidth: true, htmlLabels: false, curve: 'basis' },
+      flowchart: { 
+        // 不使用最大宽度限制，让图表自然扩展
+        useMaxWidth: false, 
+        htmlLabels: false, 
+        curve: 'basis',
+        // 增加节点间距
+        padding: 20,
+        // 增加分支间距
+        diagramPadding: 20,
+      },
       // === 序列图配置 ===
-      sequence: { useMaxWidth: true },
+      sequence: { 
+        useMaxWidth: false,
+        // 增加消息间距
+        messageAlign: 'center',
+      },
       // === 类图配置 ===
-      class: { useMaxWidth: true },
+      class: { useMaxWidth: false },
       // === 甘特图配置 ===
-      gantt: { useMaxWidth: true },
+      gantt: { useMaxWidth: false },
     })
     initialized = true
   })
@@ -47,11 +62,21 @@ export function initMermaid(appTheme: 'light' | 'dark'): void {
 
 /**
  * 切换 mermaid 主题并重新初始化
+ * 注意：主题切换后，需要调用方（MarkdownPreview.vue）自行调用 reRenderMermaidBlocks 重渲染图表
  * @param appTheme 应用当前主题
  */
-export function updateMermaidTheme(appTheme: 'light' | 'dark'): void {
+export async function updateMermaidTheme(appTheme: 'light' | 'dark'): Promise<void> {
   if (appTheme === currentTheme) return
+  
+  currentTheme = appTheme
+  
+  // 重新初始化 mermaid 配置（更新主题色）
   initMermaid(appTheme)
+  
+  // 等待 mermaid 加载完成
+  await loadMermaid()
+  
+  console.log('[mermaid] 主题配置已更新为:', appTheme)
 }
 
 /**

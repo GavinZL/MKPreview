@@ -427,6 +427,18 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
+/* 图片暗色模式优化 */
+[data-theme="dark"] .mk-body img {
+  /* 降低亮度，提升对比度，避免刺眼 */
+  filter: brightness(0.85) contrast(1.1);
+  transition: filter 0.3s ease;
+}
+
+[data-theme="dark"] .mk-body img:hover {
+  /* 悬浮时恢复正常 */
+  filter: brightness(1) contrast(1);
+}
+
 /* 图片标题（alt 文字） */
 .mk-body .image-wrapper {
   margin: 1.2em 0;
@@ -469,14 +481,58 @@
   background: var(--bg-secondary);
   border-radius: 8px;
   border: 1px solid var(--border);
+  /* 允许横向滚动，适应宽图表 */
   overflow-x: auto;
+  overflow-y: hidden;
   min-height: 120px;
+  /* 改善滚动体验 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mk-body .mermaid svg {
-  max-width: 100%;
-  max-height: 600px;
+  /* 允许 SVG 自然扩展，不强制限制宽度 */
+  width: 100%;
   height: auto;
+  /* 移除最大高度限制，让图表自然展示 */
+  /* max-height: 600px; */
+  /* 保持纵横比 */
+  object-fit: contain;
+  /* 确保 SVG 不会被压缩 */
+  min-width: min-content;
+}
+
+/* Mermaid 容器滚动条美化 */
+.mk-body .mermaid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.mk-body .mermaid::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.mk-body .mermaid::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 4px;
+}
+
+.mk-body .mermaid::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* 提示用户可滚动查看完整图表 */
+.mk-body .mermaid::after {
+  content: '← 滚动查看更多 →';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+  display: none; /* 默认隐藏，可通过 JS 检测溢出后显示 */
 }
 
 /* Mermaid 渲染失败错误提示 */
@@ -539,6 +595,19 @@
   border: 1px dashed var(--accent-red);
   border-radius: 4px;
   display: inline-block;
+}
+
+/* KaTeX 暗色模式适配 */
+[data-theme="dark"] .mk-body .katex {
+  /* 反转颜色并调整色相，使黑色文字变为浅色 */
+  filter: invert(0.85) hue-rotate(180deg);
+}
+
+[data-theme="dark"] .mk-body .katex-display {
+  /* 块级公式添加背景色块 */
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  padding: 1em;
 }
 
 /* -------------------- 8.12 ASCII 框图特殊处理 -------------------- */

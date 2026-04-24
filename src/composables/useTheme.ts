@@ -1,5 +1,6 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { updateMermaidTheme } from '@/lib/mermaidConfig'
 
 export type ResolvedTheme = 'light' | 'dark'
 
@@ -17,9 +18,14 @@ export function useTheme() {
     return preference as ResolvedTheme
   }
 
-  function applyTheme(theme: ResolvedTheme) {
+  async function applyTheme(theme: ResolvedTheme) {
     document.documentElement.setAttribute('data-theme', theme)
     resolvedTheme.value = theme
+    
+    // 同步 Mermaid 主题（异步，不阻塞 UI）
+    updateMermaidTheme(theme).catch(err => {
+      console.error('[useTheme] Mermaid 主题同步失败:', err)
+    })
   }
 
   function toggleTheme() {
