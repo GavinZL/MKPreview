@@ -65,6 +65,7 @@ export default {
   'tree.dropHint': 'Drop to open',
   'tree.searchPlaceholder': 'Search files...',
   'tree.searchResults': '{count} results',
+  'tree.filterMarkdownTooltip': 'Show only Markdown files (*.md, *.markdown)',
 
   // === Search Panel ===
   'search.placeholder': 'Search files or content...',

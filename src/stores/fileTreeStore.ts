@@ -15,6 +15,7 @@ export const useFileTreeStore = defineStore('fileTree', () => {
   const searchKeyword = ref('')
   const isLoading = ref(false)
   const loadError = ref<string | null>(null)
+  const showMarkdownOnly = ref(false)
 
   // 内部：事件监听 unlisten 句柄
   let unlistenFsChange: UnlistenFn | null = null
@@ -31,8 +32,16 @@ export const useFileTreeStore = defineStore('fileTree', () => {
 
   // 搜索过滤后的树
   const filteredRootNodes = computed(() => {
-    if (!searchKeyword.value.trim()) return rootNodes.value
-    return filterTree(rootNodes.value, searchKeyword.value.toLowerCase())
+    let nodes = rootNodes.value
+    
+    // 应用 Markdown 过滤
+    if (showMarkdownOnly.value) {
+      nodes = filterMarkdownNodes(nodes)
+    }
+    
+    // 应用搜索过滤
+    if (!searchKeyword.value.trim()) return nodes
+    return filterTree(nodes, searchKeyword.value.toLowerCase())
   })
 
   // Actions
@@ -86,6 +95,10 @@ export const useFileTreeStore = defineStore('fileTree', () => {
 
   function setSearchKeyword(keyword: string) {
     searchKeyword.value = keyword
+  }
+
+  function toggleMarkdownFilter(enabled: boolean) {
+    showMarkdownOnly.value = enabled
   }
 
   // 文件监控相关
@@ -245,6 +258,25 @@ export const useFileTreeStore = defineStore('fileTree', () => {
       .filter((n): n is FileTreeNode => n !== null)
   }
 
+  // 辅助：递归过滤只显示 Markdown 文件和包含 Markdown 文件的目录
+  function filterMarkdownNodes(nodes: FileTreeNode[]): FileTreeNode[] {
+    return nodes
+      .map(node => {
+        if (node.isDir && node.children) {
+          const filteredChildren = filterMarkdownNodes(node.children)
+          if (filteredChildren.length > 0) {
+            return { ...node, children: filteredChildren }
+          }
+        }
+        // 只保留 .md 和 .markdown 文件
+        if (!node.isDir && (node.name.endsWith('.md') || node.name.endsWith('.markdown'))) {
+          return node
+        }
+        return null
+      })
+      .filter((n): n is FileTreeNode => n !== null)
+  }
+
   // 清理
   function $dispose() {
     stopWatching()
@@ -253,12 +285,12 @@ export const useFileTreeStore = defineStore('fileTree', () => {
   return {
     // State
     rootPath, rootNodes, expandedPaths, selectedPath,
-    searchKeyword, isLoading, loadError,
+    searchKeyword, isLoading, loadError, showMarkdownOnly,
     // Getters
     rootName, hasRoot, filteredRootNodes,
     // Actions
     loadDirectory, selectNode, toggleExpand,
-    setSearchKeyword, stopWatching, handleFsChange,
+    setSearchKeyword, stopWatching, handleFsChange, toggleMarkdownFilter,
     $dispose,
   }
 })
