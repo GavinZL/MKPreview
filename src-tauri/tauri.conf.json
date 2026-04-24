@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "MKPreview",
         "width": 1200,
         "height": 800,
@@ -26,17 +27,17 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: https:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost",
+      "csp": "default-src 'self' tauri: http://tauri.localhost; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: data: blob: https: http://asset.localhost https://asset.localhost; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost https://ipc.localhost asset: http://asset.localhost https://asset.localhost; worker-src 'self' blob:; child-src 'self' blob:",
       "assetProtocol": {
         "enable": true,
-        "scope": ["/"]
+        "scope": ["**"]
       },
       "capabilities": ["default"]
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg", "msi", "nsis"],
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -49,7 +50,10 @@
       "minimumSystemVersion": "10.13"
     },
     "windows": {
-      "digestAlgorithm": "sha256"
+      "digestAlgorithm": "sha256",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      }
     }
   }
 }

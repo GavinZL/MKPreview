@@ -11,6 +11,8 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  // Tauri production 模式下必须使用相对路径，否则资源加载失败
+  base: './',
   clearScreen: false,
   server: {
     port: 5173,
