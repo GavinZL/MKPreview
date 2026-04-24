@@ -40,8 +40,10 @@ export const useFileTreeStore = defineStore('fileTree', () => {
     isLoading.value = true
     loadError.value = null
     try {
-      // 停止之前的监控
-      await stopWatching()
+      // 如果已经在监听同一个路径，不重复重启 watcher
+      if (rootPath.value !== path) {
+        await stopWatching()
+      }
 
       const tree = await tauriCommands.scanDirectory(path)
       rootPath.value = path
@@ -55,8 +57,10 @@ export const useFileTreeStore = defineStore('fileTree', () => {
         }
       }
 
-      // 启动文件监控
-      await startWatching(path)
+      // 启动文件监控（只在路径变化或首次时）
+      if (rootPath.value === path) {
+        await startWatching(path)
+      }
     } catch (err: any) {
       loadError.value = err.message || String(err)
       rootNodes.value = []
@@ -113,12 +117,114 @@ export const useFileTreeStore = defineStore('fileTree', () => {
     }
   }
 
-  function handleFsChange(_event: FsChangeEvent) {
-    // MVP: 简单实现 - 重新加载整个目录树
-    // Phase 2: 增量更新（handleCreate, handleDelete, handleRename, handleModify）
-    if (rootPath.value) {
-      loadDirectory(rootPath.value)
+  function handleFsChange(event: FsChangeEvent) {
+    // 增量更新文件树，避免整目录重扫
+    const { changeType, path, oldPath, isDir } = event
+
+    if (changeType === 'modified') {
+      // 文件内容修改不影响目录结构，直接忽略
+      return
     }
+
+    if (changeType === 'created') {
+      // 新建：确定父目录，在 children 中插入新节点
+      const parentPath = getParentPath(path)
+      insertNode(parentPath, {
+        name: path.split(/[/\\]/).pop() || path,
+        path,
+        isDir,
+        children: isDir ? [] : undefined,
+      })
+      return
+    }
+
+    if (changeType === 'deleted') {
+      // 删除：从父节点 children 中移除
+      const parentPath = getParentPath(path)
+      removeNode(parentPath, path)
+      return
+    }
+
+    if (changeType === 'renamed' && oldPath) {
+      // 重命名：找到旧节点，更新 name 和 path
+      const parentPath = getParentPath(oldPath)
+      updateNode(parentPath, oldPath, {
+        name: path.split(/[/\\]/).pop() || path,
+        path,
+      })
+      return
+    }
+  }
+
+  /** 获取父目录路径 */
+  function getParentPath(childPath: string): string {
+    const lastSep = Math.max(childPath.lastIndexOf('/'), childPath.lastIndexOf('\\'))
+    return lastSep > 0 ? childPath.substring(0, lastSep) : ''
+  }
+
+  /** 插入新节点 */
+  function insertNode(parentPath: string, newNode: FileTreeNode) {
+    // 重建根节点以触发响应式
+    rootNodes.value = insertNodeRecursive([...rootNodes.value], parentPath, newNode)
+  }
+
+  function insertNodeRecursive(nodes: FileTreeNode[], parentPath: string, newNode: FileTreeNode): FileTreeNode[] {
+    return nodes.map(node => {
+      if (node.path === parentPath && node.isDir && node.children !== undefined) {
+        return { ...node, children: [...node.children, newNode] }
+      }
+      if (node.children) {
+        return { ...node, children: insertNodeRecursive(node.children, parentPath, newNode) }
+      }
+      return node
+    })
+  }
+
+  /** 移除节点 */
+  function removeNode(parentPath: string, targetPath: string) {
+    rootNodes.value = removeNodeRecursive([...rootNodes.value], parentPath, targetPath)
+  }
+
+  function removeNodeRecursive(nodes: FileTreeNode[], parentPath: string, targetPath: string): FileTreeNode[] {
+    return nodes
+      .map(node => {
+        if (node.path === parentPath && node.isDir && node.children) {
+          return { ...node, children: node.children.filter(c => c.path !== targetPath) }
+        }
+        if (node.children) {
+          return { ...node, children: removeNodeRecursive(node.children, parentPath, targetPath) }
+        }
+        return node
+      })
+      .filter(node => node.path !== targetPath) // 过滤掉被删除的节点
+  }
+
+  /** 更新节点（重命名） */
+  function updateNode(parentPath: string, oldPath: string, updates: Partial<FileTreeNode>) {
+    rootNodes.value = updateNodeRecursive([...rootNodes.value], parentPath, oldPath, updates)
+  }
+
+  function updateNodeRecursive(
+    nodes: FileTreeNode[],
+    parentPath: string,
+    targetPath: string,
+    updates: Partial<FileTreeNode>
+  ): FileTreeNode[] {
+    return nodes.map(node => {
+      if (node.path === targetPath) {
+        return { ...node, ...updates }
+      }
+      if (node.path === parentPath && node.isDir && node.children) {
+        return {
+          ...node,
+          children: updateNodeRecursive(node.children, parentPath, targetPath, updates),
+        }
+      }
+      if (node.children) {
+        return { ...node, children: updateNodeRecursive(node.children, parentPath, targetPath, updates) }
+      }
+      return node
+    })
   }
 
   // 辅助：递归过滤搜索

@@ -12,6 +12,42 @@ export interface MkMarkdownItOptions {
   enableKaTeX?: boolean
 }
 
+/** MarkdownIt 实例缓存（按配置 key） */
+const mdCache = new Map<string, MarkdownIt>()
+
+/**
+ * 获取或创建 MarkdownIt 实例（带缓存）
+ * @param options 配置选项
+ * @returns MarkdownIt 实例
+ */
+export function getMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt {
+  const {
+    enableAnchor = true,
+    enableTaskLists = true,
+    enableSourceMap = false,
+    enableKaTeX = false,
+  } = options
+
+  const cacheKey = `${enableAnchor}|${enableTaskLists}|${enableKaTeX}|${enableSourceMap}`
+
+  let md = mdCache.get(cacheKey)
+  if (md) {
+    // baseDir 变化通过 env 传递，不需要重建实例
+    return md
+  }
+
+  md = createMarkdownIt({ enableAnchor, enableTaskLists, enableKaTeX, enableSourceMap })
+  mdCache.set(cacheKey, md)
+  // 简单 LRU：当缓存超过限制时清除最旧的
+  if (mdCache.size > MAX_CACHE_SIZE) {
+    const firstKey = mdCache.keys().next().value
+    if (firstKey) mdCache.delete(firstKey)
+  }
+  return md
+}
+
+const MAX_CACHE_SIZE = 10
+
 /**
  * 将标题文本转换为锚点 ID（与 markdown-it-anchor 的 slugify 保持一致）
  * @param s 标题文本
@@ -307,6 +343,6 @@ export function createMarkdownIt(options: MkMarkdownItOptions = {}): MarkdownIt 
  * @returns 渲染后的 HTML 字符串
  */
 export function renderMarkdown(content: string, baseDir?: string): string {
-  const md = createMarkdownIt({ baseDir })
-  return md.render(content)
+  const md = getMarkdownIt({ baseDir })
+  return md.render(content, { baseDir })
 }

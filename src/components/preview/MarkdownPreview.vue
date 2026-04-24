@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { createMarkdownIt } from '@/lib/markdownIt'
+import { getMarkdownIt } from '@/lib/markdownIt'
 import { findAnchorTarget } from '@/lib/utils'
 import { highlightAllInContainer } from '@/lib/highlighter'
 import {
@@ -86,13 +86,13 @@ async function renderContent() {
 
   isRendering.value = true
 
-  // Stage 1: Parse markdown to HTML
-  const md = createMarkdownIt({
+  // Stage 1: Parse markdown to HTML（使用缓存的 MarkdownIt 实例）
+  const md = getMarkdownIt({
     baseDir: baseDir.value,
     enableKaTeX: true,
     enableSourceMap: true,
   })
-  const html = md.render(content)
+  const html = md.render(content, { baseDir: baseDir.value })
 
   // Check cancellation
   if (token !== renderCancelToken) return
@@ -123,7 +123,7 @@ async function renderContent() {
   }
 
   // Stage 3: Syntax highlighting
-  highlightAllInContainer(article)
+  await highlightAllInContainer(article)
 
   // Stage 3.5: Mermaid 图表渲染
   await renderMermaidInContainer(article)

@@ -33,6 +33,14 @@ export default defineConfig({
     target: 'esnext',
     minify: 'esbuild',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'codemirror': ['@codemirror/state', '@codemirror/view', '@codemirror/commands', '@codemirror/lang-markdown', '@codemirror/theme-one-dark'],
+          'katex': ['katex'],
+        },
+      },
+    },
   },
   envPrefix: ['VITE_', 'TAURI_ENV_*'],
 })

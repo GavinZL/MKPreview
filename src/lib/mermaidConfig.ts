@@ -1,4 +1,11 @@
-import mermaid from 'mermaid'
+/** Mermaid 懒加载单例 */
+let mermaidPromise: Promise<typeof import('mermaid').default> | null = null
+
+async function loadMermaid(): Promise<typeof import('mermaid').default> {
+  if (mermaidPromise) return mermaidPromise
+  mermaidPromise = import('mermaid').then(m => m.default)
+  return mermaidPromise
+}
 
 let currentTheme: 'light' | 'dark' = 'light'
 let initialized = false
@@ -12,46 +19,30 @@ const observerMap = new WeakMap<HTMLElement, ResizeObserver>()
  */
 export function initMermaid(appTheme: 'light' | 'dark'): void {
   currentTheme = appTheme
-
-  mermaid.initialize({
-    // === 安全配置 ===
-    securityLevel: 'strict',
-    maxTextSize: 50000,
-    maxEdges: 500,
-
-    // === 主题配置 ===
-    theme: appTheme === 'dark' ? 'dark' : 'default',
-
-    // === 渲染配置 ===
-    startOnLoad: false,
-
-    // === 字体配置 ===
-    fontFamily: 'var(--font-mono)',
-
-    // === 流程图配置 ===
-    flowchart: {
-      useMaxWidth: true,
-      htmlLabels: false,
-      curve: 'basis',
-    },
-
-    // === 序列图配置 ===
-    sequence: {
-      useMaxWidth: true,
-    },
-
-    // === 类图配置 ===
-    class: {
-      useMaxWidth: true,
-    },
-
-    // === 甘特图配置 ===
-    gantt: {
-      useMaxWidth: true,
-    },
+  // 异步加载 mermaid 并初始化
+  loadMermaid().then(mermaid => {
+    mermaid.initialize({
+      // === 安全配置 ===
+      securityLevel: 'strict',
+      maxTextSize: 50000,
+      maxEdges: 500,
+      // === 主题配置 ===
+      theme: appTheme === 'dark' ? 'dark' : 'default',
+      // === 渲染配置 ===
+      startOnLoad: false,
+      // === 字体配置 ===
+      fontFamily: 'var(--font-mono)',
+      // === 流程图配置 ===
+      flowchart: { useMaxWidth: true, htmlLabels: false, curve: 'basis' },
+      // === 序列图配置 ===
+      sequence: { useMaxWidth: true },
+      // === 类图配置 ===
+      class: { useMaxWidth: true },
+      // === 甘特图配置 ===
+      gantt: { useMaxWidth: true },
+    })
+    initialized = true
   })
-
-  initialized = true
 }
 
 /**
@@ -73,8 +64,12 @@ export async function renderMermaidDiagram(
   id: string,
   definition: string
 ): Promise<string> {
-  if (!initialized) initMermaid('light')
+  if (!initialized) {
+    await loadMermaid()
+    initMermaid('light')
+  }
 
+  const mermaid = await loadMermaid()
   try {
     const result = await mermaid.render(id, definition.trim())
     return result.svg
@@ -184,26 +179,26 @@ function setupMermaidResizeObserver(div: HTMLElement): void {
 export async function renderMermaidInContainer(
   container: HTMLElement
 ): Promise<void> {
-  if (!initialized) initMermaid('light')
+  if (!initialized) {
+    await loadMermaid()
+    initMermaid('light')
+  }
 
   const mermaidDivs = container.querySelectorAll<HTMLElement>(
     '.mermaid:not([data-processed])'
   )
 
-  for (let i = 0; i < mermaidDivs.length; i++) {
-    const div = mermaidDivs[i]
+  if (mermaidDivs.length === 0) return
+
+  // 并行渲染所有 mermaid 图表（mermaid v10 支持并行）
+  const renderPromises = Array.from(mermaidDivs).map((div, i) => {
     const code = div.textContent?.trim() || ''
-    if (!code) continue
-
-    // 保存原始定义用于后续重渲染
+    if (!code) return Promise.resolve()
     div.setAttribute('data-definition', code)
+    return renderSingleMermaid(div, code, i).then(() => setupMermaidResizeObserver(div))
+  })
 
-    // 执行渲染
-    await renderSingleMermaid(div, code, i)
-
-    // 注册 ResizeObserver 实现自适应
-    setupMermaidResizeObserver(div)
-  }
+  await Promise.all(renderPromises)
 }
 
 /**

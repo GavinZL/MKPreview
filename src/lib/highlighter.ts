@@ -1,28 +1,25 @@
+// highlight.js 核心
 import hljs from 'highlight.js/lib/core'
 
-// 注册常用语言（按使用频率）
+// 预注册常用语言（首屏必须，体积可控）
 import javascript from 'highlight.js/lib/languages/javascript'
 import typescript from 'highlight.js/lib/languages/typescript'
 import python from 'highlight.js/lib/languages/python'
-import java from 'highlight.js/lib/languages/java'
-import cpp from 'highlight.js/lib/languages/cpp'
-import c from 'highlight.js/lib/languages/c'
-import rust from 'highlight.js/lib/languages/rust'
-import go from 'highlight.js/lib/languages/go'
-import bash from 'highlight.js/lib/languages/bash'
-import shell from 'highlight.js/lib/languages/shell'
 import json from 'highlight.js/lib/languages/json'
 import xml from 'highlight.js/lib/languages/xml'
-import css from 'highlight.js/lib/languages/css'
-import sql from 'highlight.js/lib/languages/sql'
-import yaml from 'highlight.js/lib/languages/yaml'
+import bash from 'highlight.js/lib/languages/bash'
 import markdown from 'highlight.js/lib/languages/markdown'
-import diff from 'highlight.js/lib/languages/diff'
 import plaintext from 'highlight.js/lib/languages/plaintext'
-import swift from 'highlight.js/lib/languages/swift'
-import kotlin from 'highlight.js/lib/languages/kotlin'
-import ruby from 'highlight.js/lib/languages/ruby'
-import php from 'highlight.js/lib/languages/php'
+
+// 已注册语言集合
+const registeredLanguages = new Set<string>()
+
+// 预注册核心语言
+;[javascript, typescript, python, json, xml, bash, markdown, plaintext].forEach((mod, i) => {
+  const names = ['javascript', 'typescript', 'python', 'json', 'xml', 'bash', 'markdown', 'plaintext']
+  hljs.registerLanguage(names[i], mod)
+  registeredLanguages.add(names[i])
+})
 
 // 语言别名映射表
 const languageMap: Record<string, string> = {
@@ -39,37 +36,54 @@ const languageMap: Record<string, string> = {
   'text': 'plaintext',
   'kt': 'kotlin',
   'rb': 'ruby',
+  'go': 'go',
+  'java': 'java',
+  'c': 'c',
+  'cpp': 'cpp',
+  'css': 'css',
+  'sql': 'sql',
+  'swift': 'swift',
+  'kotlin': 'kotlin',
+  'ruby': 'ruby',
+  'php': 'php',
 }
 
-// 注册所有语言
-const languages: Array<{ name: string; module: any }> = [
-  { name: 'bash', module: bash },
-  { name: 'c', module: c },
-  { name: 'cpp', module: cpp },
-  { name: 'css', module: css },
-  { name: 'diff', module: diff },
-  { name: 'go', module: go },
-  { name: 'java', module: java },
-  { name: 'javascript', module: javascript },
-  { name: 'json', module: json },
-  { name: 'kotlin', module: kotlin },
-  { name: 'markdown', module: markdown },
-  { name: 'php', module: php },
-  { name: 'plaintext', module: plaintext },
-  { name: 'python', module: python },
-  { name: 'ruby', module: ruby },
-  { name: 'rust', module: rust },
-  { name: 'shell', module: shell },
-  { name: 'sql', module: sql },
-  { name: 'swift', module: swift },
-  { name: 'typescript', module: typescript },
-  { name: 'xml', module: xml },
-  { name: 'yaml', module: yaml },
-]
+/**
+ * 动态加载语言模块（用于扩展语言包）
+ * @param name 语言名称
+ */
+async function loadLanguage(name: string): Promise<void> {
+  if (registeredLanguages.has(name)) return
 
-languages.forEach(({ name, module }) => {
-  hljs.registerLanguage(name, module)
-})
+  // 动态 import（需要 vite 配置允许）
+  const moduleMap: Record<string, () => Promise<any>> = {
+    go: () => import('highlight.js/lib/languages/go'),
+    rust: () => import('highlight.js/lib/languages/rust'),
+    java: () => import('highlight.js/lib/languages/java'),
+    c: () => import('highlight.js/lib/languages/c'),
+    cpp: () => import('highlight.js/lib/languages/cpp'),
+    css: () => import('highlight.js/lib/languages/css'),
+    sql: () => import('highlight.js/lib/languages/sql'),
+    swift: () => import('highlight.js/lib/languages/swift'),
+    kotlin: () => import('highlight.js/lib/languages/kotlin'),
+    ruby: () => import('highlight.js/lib/languages/ruby'),
+    php: () => import('highlight.js/lib/languages/php'),
+    yaml: () => import('highlight.js/lib/languages/yaml'),
+    dockerfile: () => import('highlight.js/lib/languages/dockerfile'),
+    docker: () => import('highlight.js/lib/languages/dockerfile'),
+  }
+
+  const loader = moduleMap[name]
+  if (!loader) return
+
+  try {
+    const mod = await loader()
+    hljs.registerLanguage(name, mod.default)
+    registeredLanguages.add(name)
+  } catch {
+    // 忽略加载失败
+  }
+}
 
 /**
  * 规范化语言名称（处理别名）
@@ -83,7 +97,7 @@ export function normalizeLanguage(lang: string): string {
     return languageMap[normalized]
   }
   // 再查是否已注册
-  if (hljs.getLanguage(normalized)) {
+  if (registeredLanguages.has(normalized)) {
     return normalized
   }
   return 'plaintext'
@@ -94,7 +108,7 @@ export function normalizeLanguage(lang: string): string {
  * @returns 已注册语言名称数组
  */
 export function getSupportedLanguages(): string[] {
-  return languages.map(l => l.name).sort()
+  return [...registeredLanguages].sort()
 }
 
 /**
@@ -103,7 +117,7 @@ export function getSupportedLanguages(): string[] {
  * @param lang 语言标记
  * @returns 高亮后的 HTML 字符串
  */
-export function highlightCode(code: string, lang: string): string {
+export async function highlightCode(code: string, lang: string): Promise<string> {
   if (!code) return ''
   const normalized = normalizeLanguage(lang)
 
@@ -111,23 +125,50 @@ export function highlightCode(code: string, lang: string): string {
     return hljs.highlightAuto(code).value
   }
 
+  // 按需加载语言
+  if (!registeredLanguages.has(normalized)) {
+    await loadLanguage(normalized)
+  }
+
   try {
-    return hljs.highlight(code, { language: normalized }).value
+    if (hljs.getLanguage(normalized)) {
+      return hljs.highlight(code, { language: normalized }).value
+    }
   } catch (err) {
     console.warn(`[highlighter] 高亮失败 (${lang} -> ${normalized}):`, err)
-    return hljs.highlightAuto(code).value
   }
+  return hljs.highlightAuto(code).value
 }
 
 /**
  * 对 DOM 容器中的所有代码块执行语法高亮
  * @param container 渲染容器 DOM 元素
  */
-export function highlightAllInContainer(container: HTMLElement): void {
+export async function highlightAllInContainer(container: HTMLElement): Promise<void> {
   const codeBlocks = container.querySelectorAll('pre code[class*="language-"]')
-  codeBlocks.forEach((block) => {
+  const blocks = Array.from(codeBlocks)
+
+  // 批量预加载所有需要的语言
+  const langsToLoad = new Set<string>()
+  blocks.forEach((block) => {
     const codeEl = block as HTMLElement
-    // 跳过已高亮的元素
+    if (codeEl.dataset.highlighted === 'true') return
+    const langClass = Array.from(codeEl.classList).find(c => c.startsWith('language-'))
+    const lang = langClass ? langClass.replace('language-', '') : 'plaintext'
+    const normalized = normalizeLanguage(lang)
+    if (normalized !== 'plaintext' && !registeredLanguages.has(normalized)) {
+      langsToLoad.add(normalized)
+    }
+  })
+
+  // 并行加载所有需要的语言
+  if (langsToLoad.size > 0) {
+    await Promise.all([...langsToLoad].map(loadLanguage))
+  }
+
+  // 然后同步高亮
+  blocks.forEach((block) => {
+    const codeEl = block as HTMLElement
     if (codeEl.dataset.highlighted === 'true') return
 
     const langClass = Array.from(codeEl.classList).find(c => c.startsWith('language-'))
@@ -136,7 +177,15 @@ export function highlightAllInContainer(container: HTMLElement): void {
 
     if (!code) return
 
-    const highlighted = highlightCode(code, lang)
+    const normalized = normalizeLanguage(lang)
+    let highlighted: string
+
+    if (normalized === 'plaintext' || !hljs.getLanguage(normalized)) {
+      highlighted = hljs.highlightAuto(code).value
+    } else {
+      highlighted = hljs.highlight(code, { language: normalized }).value
+    }
+
     codeEl.innerHTML = highlighted
     codeEl.dataset.highlighted = 'true'
   })
