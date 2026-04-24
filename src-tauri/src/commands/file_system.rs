@@ -63,7 +63,11 @@ pub async fn get_file_meta(path: String) -> Result<FileMeta, AppError> {
 }
 
 #[tauri::command]
-pub async fn write_file(path: String, content: String) -> Result<(), AppError> {
+pub async fn write_file(
+    path: String,
+    content: String,
+    expected_mtime: Option<u64>,
+) -> Result<(), AppError> {
     // 1. 路径安全校验：拒绝 ..
     if path.contains("..") {
         return Err(AppError::InvalidPath { path });
@@ -81,7 +85,21 @@ pub async fn write_file(path: String, content: String) -> Result<(), AppError> {
             });
         }
     }
-    // 4. 原子写入：先写 .tmp 再 rename
+    // 4. mtime 检查（仅当 expected_mtime 有值时）
+    if let Some(expected) = expected_mtime {
+        let metadata = std::fs::metadata(p).map_err(AppError::Io)?;
+        let current_mtime = metadata
+            .modified()
+            .map_err(AppError::Io)?
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(|_| AppError::Internal("Invalid mtime".to_string()))?
+            .as_secs();
+        if current_mtime != expected {
+            return Err(AppError::FsConflict { path });
+        }
+    }
+
+    // 5. 原子写入：先写 .tmp 再 rename
     let temp_path = p.with_extension("md.tmp");
     std::fs::write(&temp_path, &content).map_err(AppError::Io)?;
     std::fs::rename(&temp_path, p).map_err(AppError::Io)?;
@@ -99,7 +117,7 @@ mod tests {
         let path_str = file_path.to_string_lossy().to_string();
         let content = "Hello, MKPreview!".to_string();
 
-        let result = write_file(path_str.clone(), content.clone()).await;
+        let result = write_file(path_str.clone(), content.clone(), None).await;
         assert!(result.is_ok());
 
         let written = std::fs::read_to_string(&file_path).unwrap();
@@ -108,7 +126,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_write_file_rejects_path_traversal() {
-        let result = write_file("/etc/../etc/passwd".to_string(), "x".to_string()).await;
+        let result = write_file("/etc/../etc/passwd".to_string(), "x".to_string(), None).await;
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert_eq!(err.error_code(), "FS_INVALID_PATH");
@@ -121,7 +139,7 @@ mod tests {
         let path_str = file_path.to_string_lossy().to_string();
         let huge_content = "x".repeat(10 * 1024 * 1024 + 1);
 
-        let result = write_file(path_str, huge_content).await;
+        let result = write_file(path_str, huge_content, None).await;
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert_eq!(err.error_code(), "FS_TOO_LARGE");

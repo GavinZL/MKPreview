@@ -38,10 +38,13 @@ export const useTabStore = defineStore('tab', () => {
       return
     }
 
-    // 新标签：读取文件内容
+    // 新标签：读取文件内容和元信息
     isLoading.value = true
     try {
-      const content = await tauriCommands.readFile(path)
+      const [content, meta] = await Promise.all([
+        tauriCommands.readFile(path),
+        tauriCommands.getFileMeta(path),
+      ])
       const newTab: Tab = {
         id: path, // 用路径作为唯一 ID（同一文件不重复打开）
         path,
@@ -50,6 +53,7 @@ export const useTabStore = defineStore('tab', () => {
         scrollPosition: 0,
         cursorPosition: { line: 0, ch: 0 },
         isModified: false,
+        originalMtime: meta.modified,
       }
 
       tabs.value.push(newTab)

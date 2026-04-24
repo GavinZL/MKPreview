@@ -29,6 +29,9 @@ pub enum AppError {
     #[error("Permission denied: {path}")]
     PermissionDenied { path: String },
 
+    #[error("File has been modified externally: {path}")]
+    FsConflict { path: String },
+
     // ── 配置相关 (CFG_*) ──
     #[error("Config serialization failed: {0}")]
     ConfigSerialize(String),
@@ -77,6 +80,7 @@ impl AppError {
             NotADirectory { .. } => "FS_NOT_DIR",
             FileTooLarge { .. } => "FS_TOO_LARGE",
             PermissionDenied { .. } => "FS_NO_PERMISSION",
+            FsConflict { .. } => "FS_CONFLICT",
             ConfigSerialize(_) => "CFG_SERIALIZE",
             ConfigDeserialize(_) => "CFG_DESERIALIZE",
             InvalidSettings(_) => "CFG_INVALID_VALUE",
@@ -101,6 +105,7 @@ impl AppError {
             | NotADirectory { path }
             | PermissionDenied { path }
             | WatcherPathGone { path }
+            | FsConflict { path }
             | InvalidSearchDirectory { path } => {
                 Some(serde_json::json!({"path": path}))
             }
@@ -176,6 +181,10 @@ mod tests {
         assert_eq!(
             AppError::PermissionDenied { path: "".to_string() }.error_code(),
             "FS_NO_PERMISSION"
+        );
+        assert_eq!(
+            AppError::FsConflict { path: "".to_string() }.error_code(),
+            "FS_CONFLICT"
         );
         assert_eq!(
             AppError::ConfigSerialize("".to_string()).error_code(),

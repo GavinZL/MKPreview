@@ -22,4 +22,6 @@ export interface CursorPosition {
 export interface Tab extends TabItem {
   cursorPosition: CursorPosition
   isModified: boolean
+  /** 文件打开时的 mtime，用于保存时检测外部修改冲突 */
+  originalMtime?: number
 }

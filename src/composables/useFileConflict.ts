@@ -1,6 +1,7 @@
-import { ref, onMounted, onUnmounted } from 'vue'
-import { listen } from '@tauri-apps/api/event'
+import { ref } from 'vue'
+import { tauriEvents } from '@/services/tauriEvents'
 import { useTabStore } from '@/stores/tabStore'
+import type { FsChangeEvent } from '@/types'
 
 interface ConflictInfo {
   path: string
@@ -15,25 +16,18 @@ export function useFileConflict() {
   let unlisten: (() => void) | null = null
 
   async function startListening() {
-    unlisten = await listen<{ paths: string[]; type: string }>('fs:change', (event) => {
-      const { paths, type } = event.payload
-
-      if (type !== 'Modified' && type !== 'modified') return
-
-      for (const changedPath of paths) {
-        const tab = tabStore.tabs.find(t => t.path === changedPath)
-        if (tab && tab.isModified) {
-          conflictInfo.value = {
-            path: changedPath,
-            fileName: tab.name,
-          }
-          conflictVisible.value = true
-          return
+    unlisten = await tauriEvents.onFsChange((payload: FsChangeEvent) => {
+      if (payload.changeType !== 'modified') return
+      const tab = tabStore.tabs.find(t => t.path === payload.path)
+      if (!tab) return
+      if (tab.isModified) {
+        conflictInfo.value = {
+          path: payload.path,
+          fileName: tab.name,
         }
-
-        if (tab && !tab.isModified) {
-          tabStore.refreshFileIfOpen(changedPath)
-        }
+        conflictVisible.value = true
+      } else {
+        tabStore.refreshFileIfOpen(payload.path)
       }
     })
   }
@@ -64,9 +58,6 @@ export function useFileConflict() {
       unlisten = null
     }
   }
-
-  onMounted(() => startListening())
-  onUnmounted(() => stopListening())
 
   return {
     conflictVisible,

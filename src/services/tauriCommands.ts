@@ -15,8 +15,8 @@ export const tauriCommands = {
     invoke<string>('read_file', { path }),
 
   /** 写入文件内容 (Phase 2) */
-  writeFile: (path: string, content: string): Promise<void> =>
-    invoke<void>('write_file', { path, content }),
+  writeFile: (path: string, content: string, expectedMtime?: number): Promise<void> =>
+    invoke<void>('write_file', { path, content, expectedMtime }),
 
   /** 获取文件元信息 */
   getFileMeta: (path: string): Promise<FileMeta> =>

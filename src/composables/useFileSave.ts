@@ -2,10 +2,12 @@ import { ref } from 'vue'
 import { tauriCommands } from '@/services/tauriCommands'
 import { useTabStore } from '@/stores/tabStore'
 import { useEditorStore } from '@/stores/editorStore'
+import { useFileConflict } from '@/composables/useFileConflict'
 
 export interface SaveResult {
   success: boolean
   error?: string
+  conflict?: boolean
 }
 
 export function useFileSave() {
@@ -13,6 +15,7 @@ export function useFileSave() {
   const editorStore = useEditorStore()
   const isSaving = ref(false)
   const lastSavedAt = ref<Date | null>(null)
+  const fileConflict = useFileConflict()
 
   /** 保存指定标签的文件 */
   async function saveFile(tabId: string): Promise<SaveResult> {
@@ -27,11 +30,22 @@ export function useFileSave() {
 
     isSaving.value = true
     try {
-      await tauriCommands.writeFile(tab.path, tab.content)
+      await tauriCommands.writeFile(tab.path, tab.content, tab.originalMtime)
       tabStore.markSaved(tabId)
+      // 更新 originalMtime 为当前时间（保存后文件是最新的）
+      const updatedTab = tabStore.tabs.find(t => t.id === tabId)
+      if (updatedTab?.originalMtime !== undefined) {
+        updatedTab.originalMtime = Date.now() / 1000
+      }
       return { success: true }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
+      // 检测 FS_CONFLICT 错误码
+      if (message.includes('FS_CONFLICT') || message.includes('FS_CONFLICT')) {
+        fileConflict.conflictInfo.value = { path: tab.path, fileName: tab.name }
+        fileConflict.conflictVisible.value = true
+        return { success: false, error: message, conflict: true }
+      }
       return { success: false, error: message }
     } finally {
       isSaving.value = false
@@ -51,13 +65,23 @@ export function useFileSave() {
 
     isSaving.value = true
     try {
-      await tauriCommands.writeFile(activeTab.path, activeTab.content)
+      await tauriCommands.writeFile(activeTab.path, activeTab.content, activeTab.originalMtime)
       tabStore.markSaved(activeTab.id)
       editorStore.setModified(false)
       lastSavedAt.value = new Date()
+      // 更新 originalMtime
+      const updatedTab = tabStore.tabs.find(t => t.id === activeTab.id)
+      if (updatedTab?.originalMtime !== undefined) {
+        updatedTab.originalMtime = Date.now() / 1000
+      }
       return { success: true }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
+      if (message.includes('FS_CONFLICT')) {
+        fileConflict.conflictInfo.value = { path: activeTab.path, fileName: activeTab.name }
+        fileConflict.conflictVisible.value = true
+        return { success: false, error: message, conflict: true }
+      }
       return { success: false, error: message }
     } finally {
       isSaving.value = false

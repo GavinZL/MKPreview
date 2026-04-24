@@ -145,7 +145,7 @@ import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/uiStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useNavigationStore } from '@/stores/navigationStore'
-import { useMenuEvents } from '@/composables/useMenuEvents'
+import { useOpenDirectory } from '@/composables/useOpenDirectory'
 import { useNavigationActions } from '@/composables/useNavigationActions'
 import { builtInPreviewThemes } from '@/lib/previewThemes'
 import { previewTemplates } from '@/lib/previewTemplates'
@@ -155,7 +155,7 @@ const { t } = useI18n()
 const uiStore = useUiStore()
 const settingsStore = useSettingsStore()
 const navigationStore = useNavigationStore()
-const { openDirectoryDialog } = useMenuEvents()
+const { openDirectoryDialog } = useOpenDirectory()
 const { navigateBack, navigateForward } = useNavigationActions()
 
 const previewTheme = computed({
