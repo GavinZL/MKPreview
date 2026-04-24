@@ -65,6 +65,7 @@ export default {
   'tree.dropHint': '释放以打开',
   'tree.searchPlaceholder': '搜索文件...',
   'tree.searchResults': '{count} 个结果',
+  'tree.filterMarkdownTooltip': '只显示 Markdown 文件 (*.md, *.markdown)',
 
   // === 搜索面板 ===
   'search.placeholder': '搜索文件名或内容...',

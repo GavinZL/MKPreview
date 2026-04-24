@@ -10,6 +10,14 @@
       <div v-if="fileTreeStore.hasRoot" class="tree-root-header">
         <svg class="tree-root-icon" viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H13.5A1.5 1.5 0 0 1 15 5.5V12.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/></svg>
         <span class="tree-root-name">{{ fileTreeStore.rootName.toUpperCase() }}</span>
+        <button 
+          class="tree-filter-btn" 
+          :class="{ active: fileTreeStore.showMarkdownOnly }"
+          :title="t('tree.filterMarkdownTooltip')"
+          @click="handleMarkdownFilter"
+        >
+          MD
+        </button>
       </div>
       <TreeNode
         v-for="node in sortedDisplayNodes"
@@ -55,10 +63,8 @@ const { saveCurrentScrollTop } = useNavigationActions()
 const treeContainer = ref<HTMLElement>()
 
 const displayNodes = computed(() => {
-  if (fileTreeStore.searchKeyword.trim()) {
-    return fileTreeStore.filteredRootNodes
-  }
-  return fileTreeStore.rootNodes
+  // 始终使用 filteredRootNodes，它已经包含了 Markdown 过滤和搜索过滤
+  return fileTreeStore.filteredRootNodes
 })
 
 const sortedDisplayNodes = computed(() => {
@@ -105,6 +111,10 @@ function handleContainerKeydown(e: KeyboardEvent) {
       focusNode(nodes.length - 1)
       break
   }
+}
+
+function handleMarkdownFilter() {
+  fileTreeStore.toggleMarkdownFilter(!fileTreeStore.showMarkdownOnly)
 }
 
 // 拖拽支持（使用 Tauri 原生 API）
@@ -188,6 +198,38 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+}
+
+.tree-filter-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.tree-filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.tree-filter-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.tree-filter-btn.active:hover {
+  opacity: 0.9;
 }
 
 .tree-empty {
