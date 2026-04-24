@@ -37,7 +37,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["dmg", "app"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -45,9 +45,18 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "copyright": "© 2026 MKPreview",
+    "category": "public.app-category.developer-tools",
+    "shortDescription": "跨平台 Markdown 知识库精美渲染与浏览桌面应用",
     "macOS": {
       "frameworks": [],
-      "minimumSystemVersion": "10.13"
+      "minimumSystemVersion": "10.15",
+      "signingIdentity": "Developer ID Application: li Gavin (893973NXS8)",
+      "dmg": {
+        "windowSize": { "width": 660, "height": 440 },
+        "appPosition": { "x": 180, "y": 170 },
+        "applicationFolderPosition": { "x": 480, "y": 170 }
+      }
     },
     "windows": {
       "digestAlgorithm": "sha256",
